@@ -1,4 +1,4 @@
-# Food Ordering Microservices
+# Food Ordering System
 
 Production-grade microservices system built with Express, TypeScript, RabbitMQ, and independent databases per service.
 
@@ -17,8 +17,11 @@ Production-grade microservices system built with Express, TypeScript, RabbitMQ, 
 food-ordering-system/
 ├── packages/
 │   └── shared-types/       # Shared TypeScript types and interfaces
-├── services/               # Microservices (Phase 1+)
-├── infra/                  # Infrastructure configs (Docker, K8s, etc.)
+├── services/
+│   ├── auth/               # Authentication service (Express + RabbitMQ)
+│   └── order/              # Order management service (Express + RabbitMQ)
+├── infra/
+│   └── docker-compose.yml  # Local infrastructure (RabbitMQ, PostgreSQL)
 ├── scripts/
 │   └── new-service.js      # Service generator script
 ├── .github/
@@ -36,11 +39,32 @@ food-ordering-system/
 
 - Node.js 20+
 - npm 9+
+- Docker & Docker Compose (for local infrastructure)
 
 ### Installation
 
 ```bash
 npm install
+```
+
+### Running Infrastructure
+
+Start the local infrastructure (RabbitMQ, PostgreSQL):
+
+```bash
+cd infra && docker-compose up -d
+```
+
+Access RabbitMQ Management UI at http://localhost:15672 (guest/guest)
+
+### Running Services
+
+```bash
+# Start Auth service (port 3001)
+npm run dev:auth
+
+# Start Order service (port 3002)
+npm run dev:order
 ```
 
 ### Scripts
@@ -52,6 +76,8 @@ npm install
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm test` | Run tests across all workspaces |
 | `npm run new:service -- --name=<name>` | Generate a new service |
+| `npm run dev:auth` | Start Auth service in dev mode |
+| `npm run dev:order` | Start Order service in dev mode |
 
 ## Development Phases
 
@@ -63,12 +89,24 @@ npm install
 - [x] CI pipeline (GitHub Actions)
 - [x] Documentation
 
-### Phase 1: Core Services (Planned)
-- [ ] Auth service
-- [ ] Order service
-- [ ] Local infra via Docker Compose
-- [ ] Base Express setup
-- [ ] RabbitMQ connection wrapper
+### Phase 1: Core Services ✅
+- [x] Auth service with Express setup
+- [x] Order service with Express setup
+- [x] Local infra via Docker Compose (RabbitMQ, PostgreSQL)
+- [x] RabbitMQ connection wrapper with topic exchange
+- [x] Event publishing/subscribing (order.created)
+- [x] Health check endpoints (/health, /ready)
+- [x] Pino structured logging
+- [x] Dockerfiles for each service
+
+### Phase 2: Event Infrastructure ✅
+- [x] Shared event envelope defined
+- [x] Event schemas implemented
+- [x] Publish validation enforced
+- [x] Consume validation enforced
+- [x] Retry + DLQ queues configured
+- [x] Subscriber lifecycle managed
+- [x] Dev-only endpoints removed
 
 ## Environment Variables
 

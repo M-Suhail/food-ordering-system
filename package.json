@@ -11,7 +11,9 @@
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc -b",
     "test": "npm run test --workspaces",
-    "new:service": "node ./scripts/new-service.js"
+    "new:service": "node ./scripts/new-service.js",
+    "dev:auth": "cd services/auth && npm install && npm run dev",
+    "dev:order": "cd services/order && npm install && npm run dev"
   },
   "devDependencies": {
     "eslint": "^8.0.0",
