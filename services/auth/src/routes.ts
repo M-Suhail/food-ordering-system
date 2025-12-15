@@ -6,9 +6,9 @@ const router = Router();
 
 router.get('/health', health);
 router.post('/orders', async (req, res) => {
-  // minimal example: create order and publish order.created event
+  // create order and publish order.created event with uniform schema
   const order = {
-    id: 'order-' + Date.now(),
+    orderId: req.body.orderId || 'order-' + Date.now(),
     items: req.body.items || [],
     total: req.body.total || 0
   };

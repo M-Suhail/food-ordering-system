@@ -1,18 +1,26 @@
 import express from 'express';
 import routes from './routes';
-import { initRabbitMQ } from './lib/rabbitmq';
-import { childLogger } from './lib/logger';
+import { initRabbitMQ, getChannel } from './lib/rabbitmq';
+import { consumeEvent } from '@food/shared-types/dist/rabbit/consumer';
+import { OrderCreatedV1Schema } from '@food/shared-types';
 
 export async function createServer() {
-  const logger = childLogger('order');
-  await initRabbitMQ(logger);
+  await initRabbitMQ();
+
+  const channel = getChannel();
+  await consumeEvent(
+    channel,
+    'order_service.order_created',
+    OrderCreatedV1Schema,
+    async data => {
+      // TODO persist order, idempotency
+      console.log('order.created processed', data);
+    }
+  );
 
   const app = express();
   app.use(express.json());
   app.use(routes);
-
-  app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
-  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
-
   return app;
 }
+

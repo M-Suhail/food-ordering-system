@@ -67,6 +67,7 @@ npm run dev:auth
 npm run dev:order
 ```
 
+
 ### Scripts
 
 | Command | Description |
@@ -78,6 +79,48 @@ npm run dev:order
 | `npm run new:service -- --name=<name>` | Generate a new service |
 | `npm run dev:auth` | Start Auth service in dev mode |
 | `npm run dev:order` | Start Order service in dev mode |
+
+## API Usage
+
+### POST /orders (Auth Service)
+
+Create a new order and publish an order.created event.
+
+**Request Body:**
+
+```
+{
+	"orderId": "order-123",
+	"items": [
+		{ "id": "pizza", "qty": 1 }
+	],
+	"total": 12.5
+}
+```
+
+**Validation:**
+- `orderId`: string (required)
+- `items`: array of objects with `id` (string) and `qty` (positive integer)
+- `total`: positive number
+
+**Example Error Responses:**
+- Missing or invalid `orderId`, `items`, or `total` will result in a validation error with details in the response.
+
+### Testing the Endpoint
+
+You can use Postman or curl to test the endpoint:
+
+```
+curl -X POST http://localhost:3001/orders \
+	-H "Content-Type: application/json" \
+	-d '{
+		"orderId": "order-123",
+		"items": [{ "id": "pizza", "qty": 1 }],
+		"total": 12.5
+	}'
+```
+
+See the todo list for additional test cases and validation scenarios.
 
 ## Development Phases
 
