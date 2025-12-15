@@ -142,6 +142,7 @@ See the todo list for additional test cases and validation scenarios.
 - [x] Pino structured logging
 - [x] Dockerfiles for each service
 
+
 ### Phase 2: Event Infrastructure ✅
 - [x] Shared event envelope defined
 - [x] Event schemas implemented
@@ -150,6 +151,15 @@ See the todo list for additional test cases and validation scenarios.
 - [x] Retry + DLQ queues configured
 - [x] Subscriber lifecycle managed
 - [x] Dev-only endpoints removed
+
+### Phase 3.1: Order Service Persistence & Schema Fixes ✅
+- [x] Integrated Prisma ORM in the order service
+- [x] Added initial Prisma schema and migration for Order and ProcessedEvent models
+- [x] Added Prisma client setup in order service
+- [x] Updated shared-types to use zod and correct event schema
+- [x] Updated order service to persist orders and handle idempotency
+- [x] Added required dependencies to package.json files
+- [x] Ensured event schemas are validated and persisted correctly
 
 ## Environment Variables
 
