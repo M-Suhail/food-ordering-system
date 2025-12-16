@@ -19,7 +19,37 @@ food-ordering-system/
 │   └── shared-types/       # Shared TypeScript types and interfaces
 ├── services/
 │   ├── auth/               # Authentication service (Express + RabbitMQ)
-│   └── order/              # Order management service (Express + RabbitMQ)
+│   │   ├── src/
+│   │   │   ├── controllers/    # Route handlers
+│   │   │   ├── events/         # Event publishing logic
+│   │   │   ├── lib/            # Logger, RabbitMQ utils
+│   │   │   ├── routes.ts       # Express route definitions
+│   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
+│   │   │   └── server.ts       # Entry point
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── order/              # Order management service (Express + RabbitMQ)
+│   │   ├── src/
+│   │   │   ├── controllers/    # Route handlers
+│   │   │   ├── events/         # Event subscribing logic
+│   │   │   ├── lib/            # DB, RabbitMQ utils
+│   │   │   ├── routes.ts       # Express route definitions
+│   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
+│   │   │   └── server.ts       # Entry point
+│   │   ├── prisma/             # Prisma schema and migrations
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   └── restaurant/         # Restaurant management service (Express + Prisma + Swagger)
+│       ├── src/
+│       │   ├── controllers/    # Route handlers
+│       │   ├── lib/            # DB and logger utils
+│       │   ├── routes/         # Express route definitions
+│       │   ├── schemas/        # Zod schemas
+│       │   ├── swagger/        # Swagger (OpenAPI) config
+│       │   └── server.ts       # Entry point
+│       ├── prisma/             # Prisma schema and migrations
+│       ├── package.json
+│       └── tsconfig.json
 ├── infra/
 │   └── docker-compose.yml  # Local infrastructure (RabbitMQ, PostgreSQL)
 ├── scripts/
@@ -60,11 +90,14 @@ Access RabbitMQ Management UI at http://localhost:15672 (guest/guest)
 ### Running Services
 
 ```bash
-# Start Auth service (port 3001)
+ # Start Auth service (port 3001)
 npm run dev:auth
 
 # Start Order service (port 3002)
 npm run dev:order
+
+# Start Restaurant service (port 3003)
+npm run dev:restaurant
 ```
 
 
@@ -79,6 +112,36 @@ npm run dev:order
 | `npm run new:service -- --name=<name>` | Generate a new service |
 | `npm run dev:auth` | Start Auth service in dev mode |
 | `npm run dev:order` | Start Order service in dev mode |
+| `npm run dev:restaurant` | Start Restaurant service in dev mode |
+## API Usage
+
+### POST /restaurants (Restaurant Service)
+
+Create a new restaurant.
+
+**Request Body:**
+
+```
+{
+	"name": "Pizza Palace"
+}
+```
+
+**Validation:**
+- `name`: string (required)
+
+**Example Error Responses:**
+- Missing or invalid `name` will result in a validation error with details in the response.
+
+### Testing the Endpoint
+
+You can use Postman or curl to test the endpoint:
+
+```
+curl -X POST http://localhost:3003/restaurants \
+	-H "Content-Type: application/json" \
+	-d '{ "name": "Pizza Palace" }'
+```
 
 ## API Usage
 
@@ -125,41 +188,48 @@ See the todo list for additional test cases and validation scenarios.
 ## Development Phases
 
 ### Phase 0: Foundation ✅
-- [x] Monorepo setup with npm workspaces
-- [x] Root TypeScript, ESLint, and Prettier configs
-- [x] Shared-types package
-- [x] Service generator script
-- [x] CI pipeline (GitHub Actions)
-- [x] Documentation
+- [x] Monorepo initialized using npm workspaces
+- [x] Root-level TypeScript, ESLint, and Prettier configurations established
+- [x] Shared-types package created for cross-service contracts and schemas
+- [x] Service generator script implemented for consistent service scaffolding
+- [x] GitHub Actions CI pipeline set up for linting, type-checking, and testing
+- [x] Initial project documentation added (architecture overview and setup instructions)
 
 ### Phase 1: Core Services ✅
-- [x] Auth service with Express setup
-- [x] Order service with Express setup
-- [x] Local infra via Docker Compose (RabbitMQ, PostgreSQL)
-- [x] RabbitMQ connection wrapper with topic exchange
-- [x] Event publishing/subscribing (order.created)
-- [x] Health check endpoints (/health, /ready)
-- [x] Pino structured logging
-- [x] Dockerfiles for each service
-
+- [x] Auth and Order services scaffolded using Express and TypeScript
+- [x] Local development infrastructure set up via Docker Compose (RabbitMQ, PostgreSQL)
+- [x] RabbitMQ connection wrapper implemented with topic exchange support
+- [x] Initial event publishing and consumption flow established (order.created)
+- [x] Health and readiness endpoints implemented (/health, /ready)
+- [x] Structured logging added using Pino
+- [x] Dockerfiles created for each service
 
 ### Phase 2: Event Infrastructure ✅
-- [x] Shared event envelope defined
-- [x] Event schemas implemented
-- [x] Publish validation enforced
-- [x] Consume validation enforced
-- [x] Retry + DLQ queues configured
-- [x] Subscriber lifecycle managed
-- [x] Dev-only endpoints removed
+- [x] Defined a shared event envelope for all domain events
+- [x] Implemented versioned event schemas using Zod
+- [x] Enforced schema validation at publish time to prevent invalid events
+- [x] Enforced schema validation at consume time for safe event handling
+- [x] Configured retry queues and dead-letter queues (DLQ) in RabbitMQ
+- [x] Implemented robust subscriber lifecycle management (init, consume, shutdown)
 
 ### Phase 3.1: Order Service Persistence & Schema Fixes ✅
-- [x] Integrated Prisma ORM in the order service
-- [x] Added initial Prisma schema and migration for Order and ProcessedEvent models
-- [x] Added Prisma client setup in order service
-- [x] Updated shared-types to use zod and correct event schema
-- [x] Updated order service to persist orders and handle idempotency
-- [x] Added required dependencies to package.json files
-- [x] Ensured event schemas are validated and persisted correctly
+- [x] Integrated Prisma ORM into the Order service
+- [x] Defined Order and ProcessedEvent data models with initial Prisma schema and migrations
+- [x] Resolved schema drift and ensured database and migration history consistency
+- [x] Implemented Prisma client lifecycle management in the Order service
+- [x] Updated shared-types to use Zod for contract-first event schema validation
+- [x] Persisted orders on order.created events with idempotent consumption logic
+- [x] Ensured correct dependency ownership and workspace-level dependency management
+
+### Phase 3.2: Restaurant Service & API Documentation ✅
+- [x] Restaurant service implemented with Express and TypeScript
+- [x] Independent database schema using Prisma and PostgreSQL
+- [x] Verified data persistence and service restart safety via migrations
+- [x] Integrated Swagger (OpenAPI) documentation for all services (auth, order, restaurant)
+- [x] Standardized Swagger setup and OpenAPI schema definitions across services
+- [x] Documented all REST API endpoints using OpenAPI JSDoc annotations
+- [x] Enforced strict event schema validation and persistence consistency
+- [x] Phase 3.2 intentionally scoped to REST APIs and data modeling (no events)
 
 ## Environment Variables
 

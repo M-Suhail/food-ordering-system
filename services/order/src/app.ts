@@ -8,6 +8,7 @@ import {
   OrderCreatedV1Schema,
   type OrderCreatedV1
 } from '@food/shared-types';
+import { swaggerSpec, swaggerUi } from './swagger';
 
 export async function createServer() {
   /**
@@ -86,6 +87,7 @@ export async function createServer() {
     res.json({ status: 'ready' });
   });
 
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   return app;
 }
 

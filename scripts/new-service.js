@@ -3,8 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const arg = process.argv.find(a => a.includes('--name='));
-if (!arg) throw new Error("Provide service name: --name=auth");
+const arg = process.argv.find(a => a.startsWith('--name='));
+if (!arg) throw new Error('Provide service name: --name=xxxx');
 
 const name = arg.split('=')[1];
 const dest = path.join(__dirname, '..', 'services', name);
@@ -15,36 +15,102 @@ if (fs.existsSync(dest)) {
 }
 
 fs.mkdirSync(dest, { recursive: true });
+fs.mkdirSync(path.join(dest, 'src', 'lib'), { recursive: true });
+fs.mkdirSync(path.join(dest, 'src', 'routes'), { recursive: true });
 
+// package.json
 const pkg = {
   name: `service-${name}`,
-  version: "0.0.1",
+  version: '0.0.1',
   private: true,
   scripts: {
-    dev: "ts-node-dev --respawn --transpile-only src/server.ts",
-    build: "tsc -p tsconfig.json",
-    test: "jest --passWithNoTests"
+    dev: 'ts-node-dev --respawn --transpile-only src/server.ts',
+    build: 'tsc -p tsconfig.json',
+    start: 'node dist/server.js',
+    test: 'jest --passWithNoTests'
   },
   dependencies: {
-    express: "^4.18.0",
-    amqplib: "^0.10.0"
+    express: '^4.18.2',
+    dotenv: '^16.0.0',
+    pino: '^8.0.0'
   },
   devDependencies: {
-    "ts-node-dev": "^2.0.0"
+    'ts-node-dev': '^2.0.0',
+    typescript: '^5.0.0',
+    '@types/express': '^4.17.17'
   }
 };
 
-fs.writeFileSync(path.join(dest, "package.json"), JSON.stringify(pkg, null, 2));
-
-fs.mkdirSync(path.join(dest, "src"));
 fs.writeFileSync(
-  path.join(dest, "src", "server.ts"),
+  path.join(dest, 'package.json'),
+  JSON.stringify(pkg, null, 2)
+);
+
+// tsconfig.json
+fs.writeFileSync(
+  path.join(dest, 'tsconfig.json'),
+  JSON.stringify(
+    {
+      extends: '../../tsconfig.base.json',
+      compilerOptions: {
+        rootDir: 'src',
+        outDir: 'dist'
+      },
+      include: ['src']
+    },
+    null,
+    2
+  )
+);
+
+// .env.example
+fs.writeFileSync(
+  path.join(dest, '.env.example'),
+  `PORT=3000
+`
+);
+
+// logger
+fs.writeFileSync(
+  path.join(dest, 'src', 'lib', 'logger.ts'),
+  `import pino from 'pino';
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL || 'info'
+});
+`
+);
+
+// app.ts
+fs.writeFileSync(
+  path.join(dest, 'src', 'app.ts'),
   `import express from 'express';
-const app = express();
 
-app.get('/health', (_, res) => res.json({ status: 'ok' }));
+export function createServer() {
+  const app = express();
+  app.use(express.json());
 
-app.listen(3000, () => console.log('service-${name} running'));
+  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
+
+  return app;
+}
+`
+);
+
+// server.ts
+fs.writeFileSync(
+  path.join(dest, 'src', 'server.ts'),
+  `import { createServer } from './app';
+import { logger } from './lib/logger';
+
+const port = process.env.PORT || 3000;
+
+const app = createServer();
+
+app.listen(port, () => {
+  logger.info(\`service-${name} listening on port \${port}\`);
+});
 `
 );
 
