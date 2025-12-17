@@ -2,6 +2,12 @@
 
 Production-grade microservices system built with Express, TypeScript, RabbitMQ, and independent databases per service.
 
+## Architecture Overview
+
+- The system follows a choreography-based SAGA pattern using RabbitMQ topic exchanges.
+- Each service owns its data and communicates asynchronously via events.
+- Synchronous REST APIs are used only where appropriate (e.g., CRUD operations).
+
 ## Features
 
 - Event-driven architecture
@@ -18,7 +24,7 @@ food-ordering-system/
 ├── packages/
 │   └── shared-types/       # Shared TypeScript types and interfaces
 ├── services/
-│   ├── auth/               # Authentication service (Express + RabbitMQ)
+│   ├── auth/               # Authentication service (Express, JWT, RabbitMQ integration)
 │   │   ├── src/
 │   │   │   ├── controllers/    # Route handlers
 │   │   │   ├── events/         # Event publishing logic
@@ -28,6 +34,7 @@ food-ordering-system/
 │   │   │   └── server.ts       # Entry point
 │   │   ├── package.json
 │   │   └── tsconfig.json
+│   │   ├── .env.example        # Example environment variables
 │   ├── order/              # Order management service (Express + RabbitMQ)
 │   │   ├── src/
 │   │   │   ├── controllers/    # Route handlers
@@ -36,6 +43,17 @@ food-ordering-system/
 │   │   │   ├── routes.ts       # Express route definitions
 │   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
 │   │   │   └── server.ts       # Entry point
+│   │   ├── .env.example        # Example environment variables
+│   │   ├── prisma/             # Prisma schema and migrations
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── kitchen/            # Kitchen service (Express + Prisma + RabbitMQ)
+│   │   ├── src/
+│   │   │   ├── decision/       # Business logic for kitchen decisions
+│   │   │   ├── lib/            # DB, logger, RabbitMQ utils
+│   │   │   ├── app.ts          # Express app setup
+│   │   │   └── server.ts       # Entry point
+│   │   ├── .env.example        # Example environment variables
 │   │   ├── prisma/             # Prisma schema and migrations
 │   │   ├── package.json
 │   │   └── tsconfig.json
@@ -47,10 +65,11 @@ food-ordering-system/
 │       │   ├── schemas/        # Zod schemas
 │       │   ├── swagger/        # Swagger (OpenAPI) config
 │       │   └── server.ts       # Entry point
+│       ├── .env.example        # Example environment variables
 │       ├── prisma/             # Prisma schema and migrations
 │       ├── package.json
 │       └── tsconfig.json
-├── infra/
+├── infra
 │   └── docker-compose.yml  # Local infrastructure (RabbitMQ, PostgreSQL)
 ├── scripts/
 │   └── new-service.js      # Service generator script
@@ -90,7 +109,7 @@ Access RabbitMQ Management UI at http://localhost:15672 (guest/guest)
 ### Running Services
 
 ```bash
- # Start Auth service (port 3001)
+# Start Auth service (port 3001)
 npm run dev:auth
 
 # Start Order service (port 3002)
@@ -98,9 +117,10 @@ npm run dev:order
 
 # Start Restaurant service (port 3003)
 npm run dev:restaurant
+
+# Start Kitchen service (port 3004)
+npm run dev:kitchen
 ```
-
-
 ### Scripts
 
 | Command | Description |
@@ -113,77 +133,7 @@ npm run dev:restaurant
 | `npm run dev:auth` | Start Auth service in dev mode |
 | `npm run dev:order` | Start Order service in dev mode |
 | `npm run dev:restaurant` | Start Restaurant service in dev mode |
-## API Usage
-
-### POST /restaurants (Restaurant Service)
-
-Create a new restaurant.
-
-**Request Body:**
-
-```
-{
-	"name": "Pizza Palace"
-}
-```
-
-**Validation:**
-- `name`: string (required)
-
-**Example Error Responses:**
-- Missing or invalid `name` will result in a validation error with details in the response.
-
-### Testing the Endpoint
-
-You can use Postman or curl to test the endpoint:
-
-```
-curl -X POST http://localhost:3003/restaurants \
-	-H "Content-Type: application/json" \
-	-d '{ "name": "Pizza Palace" }'
-```
-
-## API Usage
-
-### POST /orders (Auth Service)
-
-Create a new order and publish an order.created event.
-
-**Request Body:**
-
-```
-{
-	"orderId": "order-123",
-	"items": [
-		{ "id": "pizza", "qty": 1 }
-	],
-	"total": 12.5
-}
-```
-
-**Validation:**
-- `orderId`: string (required)
-- `items`: array of objects with `id` (string) and `qty` (positive integer)
-- `total`: positive number
-
-**Example Error Responses:**
-- Missing or invalid `orderId`, `items`, or `total` will result in a validation error with details in the response.
-
-### Testing the Endpoint
-
-You can use Postman or curl to test the endpoint:
-
-```
-curl -X POST http://localhost:3001/orders \
-	-H "Content-Type: application/json" \
-	-d '{
-		"orderId": "order-123",
-		"items": [{ "id": "pizza", "qty": 1 }],
-		"total": 12.5
-	}'
-```
-
-See the todo list for additional test cases and validation scenarios.
+| `npm run dev:kitchen` | Start Kitchen service in dev mode |
 
 ## Development Phases
 
@@ -231,17 +181,21 @@ See the todo list for additional test cases and validation scenarios.
 - [x] Enforced strict event schema validation and persistence consistency
 - [x] Phase 3.2 intentionally scoped to REST APIs and data modeling (no events)
 
+### Phase 3.3: Kitchen Service & Order Decisioning ✅
+- [x] Kitchen service implemented with Express, TypeScript, Prisma, and RabbitMQ
+- [x] Defined Kitchen domain schema with Prisma (KitchenOrder, ProcessedEvent)
+- [x] Consumed order.created events and applied acceptance/rejection logic
+- [x] Published kitchen.accepted and kitchen.rejected events
+- [x] Enforced idempotent event consumption and restart safety
+- [x] Updated workspace scripts and documentation to include Kitchen service
+- [x] Enforced strict event schema validation and persistence consistency
+
 ## Environment Variables
 
-Copy `.env.example` to `.env` and configure:
+Copy `.env.example` to `.env` and configure as needed:
 
 ```
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
-POSTGRES_URL=postgres://postgres:password@localhost:5432/postgres
-MONGO_URL=mongodb://localhost:27017
+DATABASE_URL=postgres://postgres:password@localhost:5432/postgres
 JWT_SECRET=replace_me
 ```
-
-## License
-
-MIT

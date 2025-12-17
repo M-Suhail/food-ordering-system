@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model KitchenOrder {
+  orderId    String   @id
+  status     String   // ACCEPTED | REJECTED
+  reason     String?
+  decidedAt  DateTime @default(now())
+}
+
+model ProcessedEvent {
+  eventId     String   @id
+  processedAt DateTime @default(now())
+}

@@ -14,7 +14,8 @@
     "new:service": "node ./scripts/new-service.js",
     "dev:auth": "cd services/auth && npm install && npm run dev",
     "dev:order": "cd services/order && npm install && npm run dev",
-    "dev:restaurant": "cd services/restaurant && npm install && npm run dev"
+    "dev:restaurant": "cd services/restaurant && npm install && npm run dev",
+    "dev:kitchen": "cd services/kitchen && npm install && npm run dev"
   },
   "devDependencies": {
     "@types/swagger-jsdoc": "^6.0.4",
