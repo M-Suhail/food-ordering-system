@@ -126,7 +126,12 @@ write(
 
 write(
   path.join(dest, '.env.example'),
-  `PORT=3000`
+  `PORT=`
+);
+
+write(
+  path.join(dest, '.env'),
+  `PORT=`
 );
 
 /* ---------------------------

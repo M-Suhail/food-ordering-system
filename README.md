@@ -33,7 +33,7 @@ food-ordering-system/
 │   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
 │   │   │   └── server.ts       # Entry point
 │   │   ├── package.json
-│   │   └── tsconfig.json
+│   │   ├── tsconfig.json
 │   │   ├── .env.example        # Example environment variables
 │   ├── order/              # Order management service (Express + RabbitMQ)
 │   │   ├── src/
@@ -46,7 +46,7 @@ food-ordering-system/
 │   │   ├── .env.example        # Example environment variables
 │   │   ├── prisma/             # Prisma schema and migrations
 │   │   ├── package.json
-│   │   └── tsconfig.json
+│   │   ├── tsconfig.json
 │   ├── kitchen/            # Kitchen service (Express + Prisma + RabbitMQ)
 │   │   ├── src/
 │   │   │   ├── decision/       # Business logic for kitchen decisions
@@ -56,7 +56,17 @@ food-ordering-system/
 │   │   ├── .env.example        # Example environment variables
 │   │   ├── prisma/             # Prisma schema and migrations
 │   │   ├── package.json
-│   │   └── tsconfig.json
+│   │   ├── tsconfig.json
+│   ├── payment/            # Payment service (Express + Prisma + RabbitMQ)
+│   │   ├── src/
+│   │   │   ├── lib/            # DB, logger, RabbitMQ utils
+│   │   │   ├── payment/        # Payment processing logic
+│   │   │   ├── app.ts          # Express app setup
+│   │   │   └── server.ts       # Entry point
+│   │   ├── .env.example        # Example environment variables
+│   │   ├── prisma/             # Prisma schema and migrations
+│   │   ├── package.json
+│   │   ├── tsconfig.json
 │   └── restaurant/         # Restaurant management service (Express + Prisma + Swagger)
 │       ├── src/
 │       │   ├── controllers/    # Route handlers
@@ -120,6 +130,9 @@ npm run dev:restaurant
 
 # Start Kitchen service (port 3004)
 npm run dev:kitchen
+
+# Start Payment service (port 3005)
+npm run dev:payment
 ```
 ### Scripts
 
@@ -134,6 +147,7 @@ npm run dev:kitchen
 | `npm run dev:order` | Start Order service in dev mode |
 | `npm run dev:restaurant` | Start Restaurant service in dev mode |
 | `npm run dev:kitchen` | Start Kitchen service in dev mode |
+| `npm run dev:payment` | Start Payment service in dev mode |
 
 ## Development Phases
 
@@ -189,6 +203,16 @@ npm run dev:kitchen
 - [x] Enforced idempotent event consumption and restart safety
 - [x] Updated workspace scripts and documentation to include Kitchen service
 - [x] Enforced strict event schema validation and persistence consistency
+
+### Phase 3.4: Payment Service & Payment Processing ✅
+- [x] Payment service implemented with Express, TypeScript, Prisma, and RabbitMQ
+- [x] Defined Payment domain schema with Prisma (Payment, ProcessedEvent)
+- [x] Consumed kitchen.accepted events to initiate payment processing
+- [x] Implemented payment decision logic and persisted payment outcomes
+- [x] Published payment.succeeded and payment.failed events
+- [x] Enforced idempotent event consumption and restart safety
+- [x] Added payment-related event schemas to shared-types package
+- [x] Updated workspace scripts and documentation to include Payment service
 
 ## Environment Variables
 
