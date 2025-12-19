@@ -16,7 +16,8 @@
     "dev:order": "cd services/order && npm install && npm run dev",
     "dev:restaurant": "cd services/restaurant && npm install && npm run dev",
     "dev:kitchen": "cd services/kitchen && npm install && npm run dev",
-    "dev:payment": "cd services/payment && npm install && npm run dev"
+    "dev:payment": "cd services/payment && npm install && npm run dev",
+    "dev:delivery": "cd services/delivery && npm install && npm run dev"
   },
   "devDependencies": {
     "@types/swagger-jsdoc": "^6.0.4",

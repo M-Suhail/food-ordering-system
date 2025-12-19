@@ -29,3 +29,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+
+  mongodb:
+    image: mongo:7
+    container_name: fo_mongodb
+    ports:
+      - "27017:27017"

@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { health } from './controllers/healthController';
 import { subscribeOrderCreated } from './events/subscribeOrderCreated';
 
+import { getChannel } from './lib/rabbitmq';
+import { publishEvent } from '@food/shared-types';
+
 const router = Router();
 
 /**

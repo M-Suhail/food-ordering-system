@@ -67,6 +67,19 @@ food-ordering-system/
 │   │   ├── prisma/             # Prisma schema and migrations
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   ├── delivery/            # Delivery service (Express, MongoDB, RabbitMQ)
+│   │   ├── src/
+│   │   │   ├── assign/         # Driver assignment logic
+│   │   │   │   └── assignDriver.ts
+│   │   │   ├── lib/            # Logger, MongoDB, RabbitMQ utils
+│   │   │   │   ├── logger.ts
+│   │   │   │   ├── mongo.ts
+│   │   │   │   └── rabbitmq.ts
+│   │   │   ├── app.ts          # Express app setup and event handling
+│   │   │   └── server.ts       # Entry point
+│   │   ├── .env.example        # Example environment variables
+│   │   ├── package.json
+│   │   ├── tsconfig.json
 │   └── restaurant/         # Restaurant management service (Express + Prisma + Swagger)
 │       ├── src/
 │       │   ├── controllers/    # Route handlers
@@ -133,6 +146,9 @@ npm run dev:kitchen
 
 # Start Payment service (port 3005)
 npm run dev:payment
+
+# Start Delivey service (port 3006)
+npm run dev:delivery
 ```
 ### Scripts
 
@@ -148,6 +164,7 @@ npm run dev:payment
 | `npm run dev:restaurant` | Start Restaurant service in dev mode |
 | `npm run dev:kitchen` | Start Kitchen service in dev mode |
 | `npm run dev:payment` | Start Payment service in dev mode |
+| `npm run dev:delivery` | Start Delivery service in dev mode |
 
 ## Development Phases
 
@@ -214,6 +231,16 @@ npm run dev:payment
 - [x] Added payment-related event schemas to shared-types package
 - [x] Updated workspace scripts and documentation to include Payment service
 
+### Phase 3.5: Delivery Service & Driver Assignment ✅
+- [x] Delivery service implemented with Express, TypeScript, MongoDB, and RabbitMQ
+- [x] Defined Delivery domain persistence for assignments and processed events
+- [x] Consumed payment.succeeded events to trigger driver assignment
+- [x] Implemented driver assignment logic and persisted delivery state
+- [x] Published delivery.assigned events after successful assignment
+- [x] Enforced idempotent event consumption and restart safety
+- [x] Added delivery-related event schemas to shared-types package
+- [x] Updated workspace scripts and documentation to include Delivery service
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure as needed:
@@ -221,5 +248,6 @@ Copy `.env.example` to `.env` and configure as needed:
 ```
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
 DATABASE_URL=postgres://postgres:password@localhost:5432/postgres
+MONGO_URL=mongodb://localhost:27017
 JWT_SECRET=replace_me
 ```

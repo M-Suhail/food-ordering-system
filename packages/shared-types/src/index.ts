@@ -14,6 +14,7 @@ export * from './events/kitchen-accepted.v1';
 export * from './events/kitchen-rejected.v1';
 export * from './events/payment-succeeded.v1';
 export * from './events/payment-failed.v1';
+export * from './events/delivery-assigned.v1';
 
 // rabbit helpers
 export * from './rabbit/publisher';
