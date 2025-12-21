@@ -160,33 +160,52 @@ food-ordering-system/
 │   │       ├── payment/
 │   │       │   └── processPayment.ts
 │   │       └── server.ts
-│   └── restaurant/
+│   ├── restaurant/
+│   |   ├── .env
+│   |   ├── .env.example
+│   |   ├── package.json
+│   |   ├── tsconfig.json
+│   |   ├── prisma/
+│   |   │   └── schema.prisma
+│   |   └── src/
+│   |       ├── app.ts
+│   |       ├── controllers/
+│   |       │   ├── menuItems.controller.ts
+│   |       │   ├── menus.controller.ts
+│   |       │   └── restaurants.controller.ts
+│   |       ├── lib/
+│   |       │   ├── db.ts
+│   |       │   ├── logger.ts
+│   |       ├── routes/
+│   |       │   ├── health.ts
+│   |       │   └── restaurants.ts
+│   |       ├── schemas/
+│   |       │   ├── menu.schema.ts
+│   |       │   ├── menuItem.schema.ts
+│   |       │   └── restaurant.schema.ts
+│   |       ├── server.ts
+│   |       └── swagger/
+│   |            └── swagger.ts
+│   └── api-gateway/
 │       ├── .env
 │       ├── .env.example
 │       ├── package.json
 │       ├── tsconfig.json
-│       ├── prisma/
-│       │   └── schema.prisma
 │       └── src/
 │           ├── app.ts
-│           ├── controllers/
-│           │   ├── menuItems.controller.ts
-│           │   ├── menus.controller.ts
-│           │   └── restaurants.controller.ts
 │           ├── lib/
-│           │   ├── db.ts
 │           │   ├── logger.ts
+│           │   └── proxy.ts
+│           ├── middlewares/
+│           │   ├── auth.middleware.ts
+│           │   ├── error.middleware.ts
+│           │   └── rateLimit.middleware.ts
 │           ├── routes/
-│           │   ├── health.ts
-│           │   └── restaurants.ts
-│           ├── schemas/
-│           │   ├── menu.schema.ts
-│           │   ├── menuItem.schema.ts
-│           │   └── restaurant.schema.ts
-│           ├── server.ts
-│           └── swagger/
-│               └── swagger.ts
-├── tsconfig.base.json
+│           │   ├── auth.routes.ts
+│           │   ├── order.routes.ts
+│           │   └── restaurant.routes.ts
+│           └── server.ts
+└── tsconfig.base.json
 ```
 
 ## Getting Started
@@ -204,6 +223,9 @@ Access RabbitMQ Management UI at http://localhost:15672 (guest/guest)
 ### Running Services
 
 ```bash
+# Start API Gateway service (port 3000)
+npm run dev:api-gateway
+
 # Start Auth service (port 3001)
 npm run dev:auth
 
@@ -241,6 +263,7 @@ npm run dev:notification
 | `npm run dev:payment` | Start Payment service in dev mode |
 | `npm run dev:delivery` | Start Delivery service in dev mode |
 | `npm run dev:notification` | Start Notification service in dev mode |
+| `npm run dev:api-gateway` | Start API Gateway service in dev mode |
 
 ## Development Phases
 
@@ -338,6 +361,16 @@ npm run dev:notification
 - [x] Verified end-to-end event flow, duplicate handling, and restart resilience
 - [x] Note: Notification delivery channels (email, SMS, push, webhooks) are intentionally abstracted behind the Notification service and will be implemented in a later phase to keep this phase focused on event-driven architecture and idempotent processing.
 
+### Phase 4.3: API Gateway & Edge Concerns ✅
+- [x] Introduced API Gateway as the single public entry point to the system
+- [x] Implemented request routing and reverse proxying to internal services
+- [x] Enforced JWT authentication centrally at the gateway
+- [x] Propagated authenticated user context to downstream services via headers
+- [x] Added global rate limiting to protect backend services
+- [x] Implemented consistent error handling for downstream service failures
+- [x] Kept business logic out of the gateway (routing and security only)
+- [x] Prepared groundwork for future concerns (caching, request shaping, WAF)
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure as needed:
@@ -347,4 +380,9 @@ RABBITMQ_URL=amqp://guest:guest@localhost:5672
 DATABASE_URL=postgres://postgres:password@localhost:5432/postgres
 MONGO_URL=mongodb://localhost:27017
 JWT_SECRET=replace_me
+AUTH_SERVICE_URL=http://localhost:3001
+ORDER_SERVICE_URL=http://localhost:3002
+RESTAURANT_SERVICE_URL=http://localhost:3003
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=100
 ```
