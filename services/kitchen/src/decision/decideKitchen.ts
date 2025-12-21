@@ -1,4 +1,4 @@
-import { OrderCreatedV1 } from '@food/shared-types';
+import { type OrderCreatedV1 } from '@food/event-contracts';
 
 export function decideKitchen(order: OrderCreatedV1) {
   if (!order.items || order.items.length === 0) {

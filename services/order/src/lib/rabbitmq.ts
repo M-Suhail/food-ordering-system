@@ -1,67 +1,142 @@
-import amqp, { Channel, ChannelModel, Connection } from 'amqplib';
+import amqp, { Channel, ChannelModel } from 'amqplib';
 import { Logger } from 'pino';
 
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 
+/**
+ * Exchanges
+ */
 const EVENTS_EXCHANGE = 'events';
 const DLX_EXCHANGE = 'events.dlx';
 
-const ORDER_CREATED_QUEUE = 'order_service.order_created';
-const ORDER_CREATED_DLQ = 'order_service.order_created.dlq';
-const ORDER_CREATED_ROUTING_KEY = 'order.created';
+/**
+ * Queues owned by Order service
+ */
+const QUEUES = [
+  {
+    queue: 'order_service.order_created',
+    routingKey: 'order.created',
+    dlq: 'order_service.order_created.dlq'
+  },
+  {
+    queue: 'order_service.kitchen_accepted',
+    routingKey: 'kitchen.accepted'
+  },
+  {
+    queue: 'order_service.kitchen_rejected',
+    routingKey: 'kitchen.rejected'
+  },
+  {
+    queue: 'order_service.payment_succeeded',
+    routingKey: 'payment.succeeded'
+  },
+  {
+    queue: 'order_service.payment_failed',
+    routingKey: 'payment.failed'
+  },
+  {
+    queue: 'order_service.delivery_assigned',
+    routingKey: 'delivery.assigned'
+  }
+];
 
-export async function initRabbitMQ(logger?: Logger) {
-  if (connection && channel) return { connection, channel };
+export async function initRabbitMQ(
+  logger?: Logger
+): Promise<{ connection: ChannelModel; channel: Channel }> {
+  if (connection && channel) {
+    return { connection, channel };
+  }
 
-  const url = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
-  logger?.info({ url }, 'connecting to rabbitmq');
+  const url =
+    process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672';
 
-  connection = await amqp.connect(url);
-  channel = await connection.createChannel();
+  logger?.info({ url }, 'connecting to RabbitMQ');
 
-  /* Exchanges */
-  await channel.assertExchange(EVENTS_EXCHANGE, 'topic', { durable: true });
-  await channel.assertExchange(DLX_EXCHANGE, 'topic', { durable: true });
+  try {
+    connection = await amqp.connect(url);
 
-  /* Main queue */
-  await channel.assertQueue(ORDER_CREATED_QUEUE, {
-    durable: true,
-    deadLetterExchange: DLX_EXCHANGE,
-    deadLetterRoutingKey: ORDER_CREATED_ROUTING_KEY
-  });
+    connection.on('error', (err) => {
+      logger?.error({ err }, 'RabbitMQ connection error');
+    });
 
-  await channel.bindQueue(
-    ORDER_CREATED_QUEUE,
-    EVENTS_EXCHANGE,
-    ORDER_CREATED_ROUTING_KEY
-  );
+    connection.on('close', () => {
+      logger?.warn('RabbitMQ connection closed');
+      connection = null;
+      channel = null;
+    });
 
-  /* Dead letter queue */
-  await channel.assertQueue(ORDER_CREATED_DLQ, { durable: true });
+    channel = await connection.createChannel();
 
-  await channel.bindQueue(
-    ORDER_CREATED_DLQ,
-    DLX_EXCHANGE,
-    ORDER_CREATED_ROUTING_KEY
-  );
+    /**
+     * Exchanges
+     */
+    await channel.assertExchange(EVENTS_EXCHANGE, 'topic', {
+      durable: true
+    });
 
-  logger?.info('rabbitmq ready for order service');
+    await channel.assertExchange(DLX_EXCHANGE, 'topic', {
+      durable: true
+    });
 
-  connection.on('close', () => {
-    logger?.warn('rabbitmq connection closed');
+    /**
+     * Queues
+     */
+    for (const q of QUEUES) {
+      await channel.assertQueue(q.queue, {
+        durable: true,
+        deadLetterExchange: q.dlq ? DLX_EXCHANGE : undefined
+      });
+
+      await channel.bindQueue(
+        q.queue,
+        EVENTS_EXCHANGE,
+        q.routingKey
+      );
+
+      if (q.dlq) {
+        await channel.assertQueue(q.dlq, { durable: true });
+
+        await channel.bindQueue(
+          q.dlq,
+          DLX_EXCHANGE,
+          q.routingKey
+        );
+      }
+    }
+
+    logger?.info('RabbitMQ ready for order service');
+
+    return { connection, channel };
+  } catch (err) {
+    logger?.error({ err }, 'failed to initialize RabbitMQ');
     connection = null;
     channel = null;
-  });
-
-  return { connection, channel };
-// ...existing code...
+    throw err;
+  }
 }
 
 export function getChannel(): Channel {
   if (!channel) {
-    throw new Error('RabbitMQ channel not initialized');
+    throw new Error(
+      'RabbitMQ channel not initialized. Call initRabbitMQ() first.'
+    );
   }
   return channel;
 }
 
+export async function closeRabbitMQ(logger?: Logger) {
+  try {
+    if (channel) {
+      await channel.close();
+      channel = null;
+    }
+    if (connection) {
+      await connection.close();
+      connection = null;
+    }
+    logger?.info('RabbitMQ connection closed gracefully');
+  } catch (err) {
+    logger?.error({ err }, 'error closing RabbitMQ');
+  }
+}

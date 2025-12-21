@@ -2,12 +2,11 @@ import express from 'express';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { prisma } from './lib/db';
 import { processPayment } from './payment/processPayment';
+import { consumeEvent, publishEvent } from '@food/event-bus';
 import {
-  consumeEvent,
-  publishEvent,
   KitchenAcceptedV1Schema,
   type KitchenAcceptedV1
-} from '@food/shared-types';
+} from '@food/event-contracts';
 
 export async function createServer() {
   await initRabbitMQ();

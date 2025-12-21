@@ -3,7 +3,7 @@ import { health } from './controllers/healthController';
 import { subscribeOrderCreated } from './events/subscribeOrderCreated';
 
 import { getChannel } from './lib/rabbitmq';
-import { publishEvent } from '@food/shared-types';
+import { publishEvent } from '@food/event-bus';
 
 const router = Router();
 

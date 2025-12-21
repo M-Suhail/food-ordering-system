@@ -2,43 +2,28 @@ import express from 'express';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { prisma } from './lib/db';
 
+import { consumeEvent, publishEvent } from '@food/event-bus';
 import {
-  consumeEvent,
-  publishEvent,
   OrderCreatedV1Schema,
-  type OrderCreatedV1
-} from '@food/shared-types';
-import { swaggerSpec, swaggerUi } from './swagger';
+  DeliveryAssignedV1Schema,
+  type OrderCreatedV1,
+  type DeliveryAssignedV1
+} from '@food/event-contracts';
 
 export async function createServer() {
-  /**
-   * Initialise RabbitMQ
-   */
   await initRabbitMQ();
   const channel = getChannel();
 
-  /**
-   * Consume order.created events
-   */
   await consumeEvent<OrderCreatedV1>(
     channel,
     'order_service.order_created',
     OrderCreatedV1Schema,
     async (data) => {
-      /**
-       * Idempotency check
-       */
       const processed = await prisma.processedEvent.findUnique({
         where: { eventId: data.orderId }
       });
+      if (processed) return;
 
-      if (processed) {
-        return;
-      }
-
-      /**
-       * Persist order
-       */
       await prisma.order.create({
         data: {
           id: data.orderId,
@@ -48,48 +33,41 @@ export async function createServer() {
         }
       });
 
-      /**
-       * Mark event as processed
-       */
       await prisma.processedEvent.create({
-        data: {
-          eventId: data.orderId
-        }
-      });
-
-      /**
-       * Emit follow-up event
-       */
-      publishEvent(channel, 'order.persisted', {
-        eventId: `evt-${Date.now()}`,
-        eventType: 'order.persisted',
-        eventVersion: 1,
-        occurredAt: new Date().toISOString(),
-        producer: 'order-service',
-        data: {
-          orderId: data.orderId
-        }
+        data: { eventId: data.orderId }
       });
     }
   );
 
-  /**
-   * HTTP server (health + readiness only)
-   */
+  await consumeEvent<DeliveryAssignedV1>(
+    channel,
+    'order_service.delivery_assigned',
+    DeliveryAssignedV1Schema,
+    async (data) => {
+      const id = `delivery-${data.orderId}`;
+
+      const processed = await prisma.processedEvent.findUnique({
+        where: { eventId: id }
+      });
+      if (processed) return;
+
+      await prisma.order.update({
+        where: { id: data.orderId },
+        data: { status: 'DELIVERY_ASSIGNED' }
+      });
+
+      await prisma.processedEvent.create({
+        data: { eventId: id }
+      });
+    }
+  );
+
   const app = express();
-  app.use(express.json());
-
-  app.get('/health', (_req, res) => {
-    res.json({ status: 'ok' });
-  });
-
-  app.get('/ready', (_req, res) => {
-    res.json({ status: 'ready' });
-  });
-
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
   return app;
 }
+
 
 
 

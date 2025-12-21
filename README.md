@@ -22,101 +22,83 @@ Production-grade microservices system built with Express, TypeScript, RabbitMQ, 
 ```
 food-ordering-system/
 ├── packages/
-│   └── shared-types/       # Shared TypeScript types and interfaces
+│   ├── event-bus/           # Event bus utilities (publish/consume)
+│   │   ├── src/
+│   │   │   ├── consumeEvent.ts
+│   │   │   ├── publishEvent.ts
+│   │   │   └── index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   ├── event-contracts/     # Event contracts and schemas
+│   │   ├── src/
+│   │   │   ├── envelope/
+│   │   │   │   └── event-envelope.ts
+│   │   │   └── events/
+│   │   │       ├── delivery-assigned.v1.ts
+│   │   │       ├── kitchen-accepted.v1.ts
+│   │   │       ├── kitchen-rejected.v1.ts
+│   │   │       ├── order-created.v1.ts
+│   │   │       ├── payment-failed.v1.ts
+│   │   │       ├── payment-succeeded.v1.ts
+│   │   │       └── index.ts
+│   │   ├── package.json
+│   │   └── tsconfig.json
 ├── services/
-│   ├── auth/               # Authentication service (Express, JWT, RabbitMQ integration)
+│   ├── auth/                # Authentication service
 │   │   ├── src/
-│   │   │   ├── controllers/    # Route handlers
-│   │   │   ├── events/         # Event publishing logic
-│   │   │   ├── lib/            # Logger, RabbitMQ utils
-│   │   │   ├── routes.ts       # Express route definitions
-│   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
-│   │   │   └── server.ts       # Entry point
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   │   ├── .env.example        # Example environment variables
-│   ├── order/              # Order management service (Express + RabbitMQ)
-│   │   ├── src/
-│   │   │   ├── controllers/    # Route handlers
-│   │   │   ├── events/         # Event subscribing logic
-│   │   │   ├── lib/            # DB, RabbitMQ utils
-│   │   │   ├── routes.ts       # Express route definitions
-│   │   │   ├── swagger.ts      # Swagger (OpenAPI) config
-│   │   │   └── server.ts       # Entry point
-│   │   ├── .env.example        # Example environment variables
-│   │   ├── prisma/             # Prisma schema and migrations
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   ├── kitchen/            # Kitchen service (Express + Prisma + RabbitMQ)
-│   │   ├── src/
-│   │   │   ├── decision/       # Business logic for kitchen decisions
-│   │   │   ├── lib/            # DB, logger, RabbitMQ utils
-│   │   │   ├── app.ts          # Express app setup
-│   │   │   └── server.ts       # Entry point
-│   │   ├── .env.example        # Example environment variables
-│   │   ├── prisma/             # Prisma schema and migrations
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   ├── payment/            # Payment service (Express + Prisma + RabbitMQ)
-│   │   ├── src/
-│   │   │   ├── lib/            # DB, logger, RabbitMQ utils
-│   │   │   ├── payment/        # Payment processing logic
-│   │   │   ├── app.ts          # Express app setup
-│   │   │   └── server.ts       # Entry point
-│   │   ├── .env.example        # Example environment variables
-│   │   ├── prisma/             # Prisma schema and migrations
-│   │   ├── package.json
-│   │   ├── tsconfig.json
-│   ├── delivery/            # Delivery service (Express, MongoDB, RabbitMQ)
-│   │   ├── src/
-│   │   │   ├── assign/         # Driver assignment logic
-│   │   │   │   └── assignDriver.ts
-│   │   │   ├── lib/            # Logger, MongoDB, RabbitMQ utils
+│   │   │   ├── controllers/
+│   │   │   │   └── healthController.ts
+│   │   │   ├── events/
+│   │   │   │   └── publishOrderCreated.ts
+│   │   │   ├── lib/
 │   │   │   │   ├── logger.ts
-│   │   │   │   ├── mongo.ts
 │   │   │   │   └── rabbitmq.ts
-│   │   │   ├── app.ts          # Express app setup and event handling
-│   │   │   └── server.ts       # Entry point
-│   │   ├── .env.example        # Example environment variables
+│   │   │   ├── app.ts
+│   │   │   ├── routes.ts
+│   │   │   ├── server.ts
+│   │   │   └── swagger.ts
+│   │   ├── Dockerfile
 │   │   ├── package.json
-│   │   ├── tsconfig.json
-│   └── restaurant/         # Restaurant management service (Express + Prisma + Swagger)
-│       ├── src/
-│       │   ├── controllers/    # Route handlers
-│       │   ├── lib/            # DB and logger utils
-│       │   ├── routes/         # Express route definitions
-│       │   ├── schemas/        # Zod schemas
-│       │   ├── swagger/        # Swagger (OpenAPI) config
-│       │   └── server.ts       # Entry point
-│       ├── .env.example        # Example environment variables
-│       ├── prisma/             # Prisma schema and migrations
+│   │   └── tsconfig.json
+│   ├── order/               # Order management service
+│   │   ├── src/
+│   │   │   ├── controllers/
+│   │   │   │   └── healthController.ts
+│   │   │   ├── events/
+│   │   │   │   └── subscribeOrderCreated.ts
+│   │   │   ├── lib/
+│   │   │   │   ├── db.ts
+│   │   │   │   ├── logger.ts
+│   │   │   │   └── rabbitmq.ts
+│   │   │   ├── app.ts
+│   │   │   ├── routes.ts
+│   │   │   ├── server.ts
+│   │   │   └── swagger.ts
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
+│   │   └── tsconfig.json
+│   ├── kitchen/             # Kitchen service
+│   │   ├── src/
+│   │   │   ├── decision/
+│   │   │   │   └── decideKitchen.ts
+│   │   ├── package.json
+│   │   ├── prisma/
+│   │   │   │   └── rabbitmq.ts
+│   │   │   ├── payment/
+│   │   └── tsconfig.json
+│   ├── delivery/            # Delivery service
+│   │   │   │   └── rabbitmq.ts
+│   │   │   ├── app.ts
+│       │   │   └── restaurants.controller.ts
+│       │   ├── lib/
 │       ├── package.json
-│       └── tsconfig.json
-├── infra
-│   └── docker-compose.yml  # Local infrastructure (RabbitMQ, PostgreSQL)
-├── scripts/
-│   └── new-service.js      # Service generator script
-├── .github/
+│       ├── prisma/
 │   └── workflows/
-│       └── ci.yml          # CI pipeline
-├── tsconfig.base.json      # Base TypeScript configuration
-├── .eslintrc.cjs           # ESLint configuration
-├── .prettierrc             # Prettier configuration
-└── package.json            # Root package with workspaces
-```
-
+│       └── ci.yml           # CI pipeline
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20+
-- npm 9+
-- Docker & Docker Compose (for local infrastructure)
-
-### Installation
-
-```bash
-npm install
 ```
 
 ### Running Infrastructure
@@ -240,6 +222,18 @@ npm run dev:delivery
 - [x] Enforced idempotent event consumption and restart safety
 - [x] Added delivery-related event schemas to shared-types package
 - [x] Updated workspace scripts and documentation to include Delivery service
+
+### Phase 4.1: Order Lifecycle Progression (Event-Driven) ✅
+- [x] Order service kept event-only with no business REST APIs
+- [x] Order service consumes downstream events to update order state
+- [x] Integrated kitchen.accepted and kitchen.rejected events into order lifecycle
+- [x] Integrated payment.succeeded and payment.failed events into order lifecycle
+- [x] Order state transitions handled exclusively via events
+- [x] Enforced idempotent event consumption using processed-event tracking
+- [x] Ensured correct ordering and consistency across service restarts
+- [x] Maintained strict separation between event contracts and transport logic
+- [x] Optional support added for emitting order.updated events (future extension)
+- [x] Verified end-to-end SAGA flow across auth → order → kitchen → payment → delivery
 
 ## Environment Variables
 

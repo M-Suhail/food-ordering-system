@@ -48,4 +48,4 @@ export const swaggerSpec = swaggerJsdoc({
   apis: ['./src/routes/*.ts']
 });
 
-export { swaggerUi };
+

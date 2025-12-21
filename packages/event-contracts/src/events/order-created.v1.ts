@@ -13,4 +13,3 @@ export const OrderCreatedV1Schema = z.object({
 });
 
 export type OrderCreatedV1 = z.infer<typeof OrderCreatedV1Schema>;
-

@@ -11,13 +11,12 @@ export async function consumeEvent<T>(
     if (!msg) return;
 
     try {
-      const parsed = JSON.parse(msg.content.toString());
-      const validated = schema.parse(parsed.data);
-      await handler(validated);
+      const parsed = schema.parse(JSON.parse(msg.content.toString()));
+      await handler(parsed);
       channel.ack(msg);
-    } catch {
+    } catch (err) {
       channel.nack(msg, false, false);
+      throw err;
     }
   });
 }
-

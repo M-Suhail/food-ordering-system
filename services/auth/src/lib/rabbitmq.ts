@@ -1,28 +1,76 @@
-import amqp, { Connection, Channel } from 'amqplib';
+import amqp, { Channel, ChannelModel } from 'amqplib';
 import { Logger } from 'pino';
 
-let connection: Connection | null = null;
+let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 
-export async function initRabbitMQ(logger?: Logger) {
-  if (connection && channel) return { connection, channel };
-  const url = process.env.RABBITMQ_URL || 'amqp://guest:guest@localhost:5672';
-  logger?.info({ url }, 'connecting to rabbitmq');
-  connection = await amqp.connect(url);
-  channel = await connection.createChannel();
-  // default exchange for events
-  await channel.assertExchange('events', 'topic', { durable: true });
-  logger?.info('rabbitmq ready');
-  // handle close
-  connection.on('close', () => {
-    logger?.warn('rabbitmq connection closed');
+const EVENTS_EXCHANGE = 'events';
+
+export async function initRabbitMQ(
+  logger?: Logger
+): Promise<{ connection: ChannelModel; channel: Channel }> {
+  if (connection && channel) {
+    return { connection, channel };
+  }
+
+  const url =
+    process.env.RABBITMQ_URL ?? 'amqp://guest:guest@localhost:5672';
+
+  logger?.info({ url }, 'connecting to RabbitMQ');
+
+  try {
+    connection = await amqp.connect(url);
+
+    connection.on('error', (err) => {
+      logger?.error({ err }, 'RabbitMQ connection error');
+    });
+
+    connection.on('close', () => {
+      logger?.warn('RabbitMQ connection closed');
+      connection = null;
+      channel = null;
+    });
+
+    channel = await connection.createChannel();
+
+    // Default exchange for domain events
+    await channel.assertExchange(EVENTS_EXCHANGE, 'topic', {
+      durable: true
+    });
+
+    logger?.info('RabbitMQ ready');
+
+    return { connection, channel };
+  } catch (err) {
+    logger?.error({ err }, 'failed to initialize RabbitMQ');
     connection = null;
     channel = null;
-  });
-  return { connection, channel };
+    throw err;
+  }
 }
 
 export function getChannel(): Channel {
-  if (!channel) throw new Error('RabbitMQ channel not initialized');
+  if (!channel) {
+    throw new Error(
+      'RabbitMQ channel not initialized. Call initRabbitMQ() first.'
+    );
+  }
   return channel;
 }
+
+export async function closeRabbitMQ(logger?: Logger) {
+  try {
+    if (channel) {
+      await channel.close();
+      channel = null;
+    }
+    if (connection) {
+      await connection.close();
+      connection = null;
+    }
+    logger?.info('RabbitMQ connection closed gracefully');
+  } catch (err) {
+    logger?.error({ err }, 'error closing RabbitMQ');
+  }
+}
+

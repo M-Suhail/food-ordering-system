@@ -4,12 +4,11 @@ import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { connectMongo } from './lib/mongo';
 import { assignDriver } from './assign/assignDriver';
 
+import { consumeEvent, publishEvent } from '@food/event-bus';
 import {
-  consumeEvent,
-  publishEvent,
   PaymentSucceededV1Schema,
   type PaymentSucceededV1
-} from '@food/shared-types';
+} from '@food/event-contracts';
 
 export async function createServer() {
   await initRabbitMQ();
