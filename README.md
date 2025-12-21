@@ -21,85 +21,175 @@ Production-grade microservices system built with Express, TypeScript, RabbitMQ, 
 
 ```
 food-ordering-system/
+├── .eslintrc.cjs
+├── .prettierrc
+├── README.md
+├── infra/
+│   └── docker-compose.yml
+├── package.json
 ├── packages/
-│   ├── event-bus/           # Event bus utilities (publish/consume)
-│   │   ├── src/
-│   │   │   ├── consumeEvent.ts
-│   │   │   ├── publishEvent.ts
-│   │   │   └── index.ts
+│   ├── event-bus/
 │   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── event-contracts/     # Event contracts and schemas
-│   │   ├── src/
-│   │   │   ├── envelope/
-│   │   │   │   └── event-envelope.ts
-│   │   │   └── events/
-│   │   │       ├── delivery-assigned.v1.ts
-│   │   │       ├── kitchen-accepted.v1.ts
-│   │   │       ├── kitchen-rejected.v1.ts
-│   │   │       ├── order-created.v1.ts
-│   │   │       ├── payment-failed.v1.ts
-│   │   │       ├── payment-succeeded.v1.ts
-│   │   │       └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── consumeEvent.ts
+│   │       ├── index.ts
+│   │       └── publishEvent.ts
+│   └── event-contracts/
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── src/
+│           ├── envelope/
+│           │   └── event-envelope.ts
+│           └── events/
+│               ├── delivery-assigned.v1.ts
+│               ├── kitchen-accepted.v1.ts
+│               ├── kitchen-rejected.v1.ts
+│               ├── order-created.v1.ts
+│               ├── payment-failed.v1.ts
+│               ├── payment-succeeded.v1.ts
+│               └── index.ts
+├── scripts/
+│   └── new-service.js
 ├── services/
-│   ├── auth/                # Authentication service
-│   │   ├── src/
-│   │   │   ├── controllers/
-│   │   │   │   └── healthController.ts
-│   │   │   ├── events/
-│   │   │   │   └── publishOrderCreated.ts
-│   │   │   ├── lib/
-│   │   │   │   ├── logger.ts
-│   │   │   │   └── rabbitmq.ts
-│   │   │   ├── app.ts
-│   │   │   ├── routes.ts
-│   │   │   ├── server.ts
-│   │   │   └── swagger.ts
+│   ├── auth/
+│   │   ├── .env
+│   │   ├── .env.example
 │   │   ├── Dockerfile
 │   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── order/               # Order management service
-│   │   ├── src/
-│   │   │   ├── controllers/
-│   │   │   │   └── healthController.ts
-│   │   │   ├── events/
-│   │   │   │   └── subscribeOrderCreated.ts
-│   │   │   ├── lib/
-│   │   │   │   ├── db.ts
-│   │   │   │   ├── logger.ts
-│   │   │   │   └── rabbitmq.ts
-│   │   │   ├── app.ts
-│   │   │   ├── routes.ts
-│   │   │   ├── server.ts
-│   │   │   └── swagger.ts
-│   │   ├── Dockerfile
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── controllers/
+│   │       │   └── healthController.ts
+│   │       ├── events/
+│   │       │   └── publishOrderCreated.ts
+│   │       ├── lib/
+│   │       │   ├── logger.ts
+│   │       │   └── rabbitmq.ts
+│   │       ├── routes.ts
+│   │       ├── server.ts
+│   │       └── swagger.ts
+│   ├── delivery/
+│   │   ├── .env
+│   │   ├── .env.example
 │   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── assign/
+│   │       │   └── assignDriver.ts
+│   │       ├── lib/
+│   │       │   ├── logger.ts
+│   │       │   ├── mongo.ts
+│   │       │   └── rabbitmq.ts
+│   │       └── server.ts
+│   ├── kitchen/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── package.json
+│   │   ├── tsconfig.json
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
-│   │   └── tsconfig.json
-│   ├── kitchen/             # Kitchen service
-│   │   ├── src/
-│   │   │   ├── decision/
-│   │   │   │   └── decideKitchen.ts
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── controllers/
+│   │       │   └── healthController.ts
+│   │       ├── decision/
+│   │       │   └── decideKitchen.ts
+│   │       ├── lib/
+│   │       │   ├── db.ts
+│   │       │   ├── logger.ts
+│   │       │   └── rabbitmq.ts
+│   │       └── server.ts
+│   ├── notification/
+│   │   ├── .env
+│   │   ├── .env.example
 │   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── consumers/
+│   │       │   ├── deliveryAssigned.consumer.ts
+│   │       │   ├── kitchenAccepted.consumer.ts
+│   │       │   ├── kitchenRejected.consumer.ts
+│   │       │   ├── orderCreated.consumer.ts
+│   │       │   ├── paymentFailed.consumer.ts
+│   │       │   └── paymentSucceeded.consumer.ts
+│   │       ├── lib/
+│   │       │   ├── logger.ts
+│   │       │   ├── mongo.ts
+│   │       │   └── rabbitmq.ts
+│   │       ├── notifications/
+│   │       │   └── sendNotification.ts
+│   │       └── server.ts
+│   ├── order/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── tsconfig.json
 │   │   ├── prisma/
-│   │   │   │   └── rabbitmq.ts
-│   │   │   ├── payment/
-│   │   └── tsconfig.json
-│   ├── delivery/            # Delivery service
-│   │   │   │   └── rabbitmq.ts
-│   │   │   ├── app.ts
-│       │   │   └── restaurants.controller.ts
-│       │   ├── lib/
+│   │   │   └── schema.prisma
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── controllers/
+│   │       │   └── healthController.ts
+│   │       ├── events/
+│   │       │   └── subscribeOrderCreated.ts
+│   │       ├── lib/
+│   │       │   ├── db.ts
+│   │       │   ├── logger.ts
+│   │       │   └── rabbitmq.ts
+│   │       ├── routes.ts
+│   │       ├── server.ts
+│   │       └── swagger.ts
+│   ├── payment/
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
+│   │   └── src/
+│   │       ├── app.ts
+│   │       ├── lib/
+│   │       │   ├── db.ts
+│   │       │   ├── logger.ts
+│   │       │   └── rabbitmq.ts
+│   │       ├── payment/
+│   │       │   └── processPayment.ts
+│   │       └── server.ts
+│   └── restaurant/
+│       ├── .env
+│       ├── .env.example
 │       ├── package.json
+│       ├── tsconfig.json
 │       ├── prisma/
-│   └── workflows/
-│       └── ci.yml           # CI pipeline
-## Getting Started
-
+│       │   └── schema.prisma
+│       └── src/
+│           ├── app.ts
+│           ├── controllers/
+│           │   ├── menuItems.controller.ts
+│           │   ├── menus.controller.ts
+│           │   └── restaurants.controller.ts
+│           ├── lib/
+│           │   ├── db.ts
+│           │   ├── logger.ts
+│           ├── routes/
+│           │   ├── health.ts
+│           │   └── restaurants.ts
+│           ├── schemas/
+│           │   ├── menu.schema.ts
+│           │   ├── menuItem.schema.ts
+│           │   └── restaurant.schema.ts
+│           ├── server.ts
+│           └── swagger/
+│               └── swagger.ts
+├── tsconfig.base.json
 ```
+
+## Getting Started
 
 ### Running Infrastructure
 
@@ -131,6 +221,9 @@ npm run dev:payment
 
 # Start Delivey service (port 3006)
 npm run dev:delivery
+
+# Start Notification service (port 3007)
+npm run dev:notification
 ```
 ### Scripts
 
@@ -147,6 +240,7 @@ npm run dev:delivery
 | `npm run dev:kitchen` | Start Kitchen service in dev mode |
 | `npm run dev:payment` | Start Payment service in dev mode |
 | `npm run dev:delivery` | Start Delivery service in dev mode |
+| `npm run dev:notification` | Start Notification service in dev mode |
 
 ## Development Phases
 
@@ -234,6 +328,15 @@ npm run dev:delivery
 - [x] Maintained strict separation between event contracts and transport logic
 - [x] Optional support added for emitting order.updated events (future extension)
 - [x] Verified end-to-end SAGA flow across auth → order → kitchen → payment → delivery
+
+### Phase 4.2: Order Lifecycle Progression (Event-Driven) ✅
+- [x] Notification service implemented with Express, TypeScript, MongoDB, and RabbitMQ
+- [x] Consumed domain events (order.created, kitchen.accepted/rejected, payment.succeeded/failed, delivery.assigned)
+- [x] Persisted notification processing state in MongoDB for idempotency and restart safety
+- [x] Implemented one consumer per event with strict schema validation
+- [x] Ensured side-effect-only behavior (no impact on core business flow)
+- [x] Verified end-to-end event flow, duplicate handling, and restart resilience
+- [x] Note: Notification delivery channels (email, SMS, push, webhooks) are intentionally abstracted behind the Notification service and will be implemented in a later phase to keep this phase focused on event-driven architecture and idempotent processing.
 
 ## Environment Variables
 
