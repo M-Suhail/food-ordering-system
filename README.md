@@ -58,18 +58,20 @@ food-ordering-system/
 │   │   ├── Dockerfile
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
 │   │   └── src/
 │   │       ├── app.ts
-│   │       ├── controllers/
-│   │       │   └── healthController.ts
+│   │       ├── server.ts
 │   │       ├── events/
 │   │       │   └── publishOrderCreated.ts
 │   │       ├── lib/
+│   │       │   ├── db.ts
 │   │       │   ├── logger.ts
 │   │       │   └── rabbitmq.ts
-│   │       ├── routes.ts
-│   │       ├── server.ts
-│   │       └── swagger.ts
+│   │       └── users/
+│   │           ├── user.model.ts
+│   │           └── user.service.ts
 │   ├── delivery/
 │   │   ├── .env
 │   │   ├── .env.example
@@ -370,6 +372,16 @@ npm run dev:notification
 - [x] Implemented consistent error handling for downstream service failures
 - [x] Kept business logic out of the gateway (routing and security only)
 - [x] Prepared groundwork for future concerns (caching, request shaping, WAF)
+
+### Phase 5.1: Auth Service User Model & Persistence ✅
+- [x] Introduced persistent User domain in the Auth service
+- [x] Integrated Prisma ORM with PostgreSQL for user storage
+- [x] Defined secure User schema with unique email constraint
+- [x] Implemented password hashing using bcrypt
+- [x] Added user domain service for user creation and lookup
+- [x] Applied database migrations for user persistence
+- [x] Kept Auth service APIs intentionally minimal (no login yet)
+- [x] Note: Public authentication APIs (login, register, token issuance) will be introduced in Phase 5.2 to maintain clear separation between persistence and authentication flows.
 
 ## Environment Variables
 
