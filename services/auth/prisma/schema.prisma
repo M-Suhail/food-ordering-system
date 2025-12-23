@@ -12,8 +12,16 @@ model User {
   email        String   @unique
   passwordHash String
   role         String   @default("user")
+  refreshTokens RefreshToken[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
 
-  @@map("users")
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  revoked   Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }

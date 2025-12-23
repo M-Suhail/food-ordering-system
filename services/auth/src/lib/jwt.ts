@@ -1,16 +1,17 @@
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = '15m';
+const ACCESS_SECRET = process.env.JWT_SECRET!;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
-export interface JwtPayload {
-  sub: string;
-  email: string;
-  role: string;
+export function signAccessToken(payload: object) {
+  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
 }
 
-export function signAccessToken(payload: JwtPayload) {
-  return jwt.sign(payload, JWT_SECRET, {
-    expiresIn: JWT_EXPIRES_IN
-  });
+export function signRefreshToken(payload: object) {
+  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
 }
+
+export function verifyRefreshToken(token: string) {
+  return jwt.verify(token, REFRESH_SECRET);
+}
+
