@@ -9,6 +9,8 @@ import { registerPaymentSucceededConsumer } from './consumers/paymentSucceeded.c
 import { registerPaymentFailedConsumer } from './consumers/paymentFailed.consumer';
 import { registerDeliveryAssignedConsumer } from './consumers/deliveryAssigned.consumer';
 
+import { metricsMiddleware } from '@food/observability';
+
 export async function createServer() {
   await initMongo();
   await initRabbitMQ();
@@ -23,6 +25,7 @@ export async function createServer() {
   await registerDeliveryAssignedConsumer(channel);
 
   const app = express();
+   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'notification-service'));
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   return app;
 }

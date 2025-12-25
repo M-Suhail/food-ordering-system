@@ -5,10 +5,12 @@ import restaurantRoutes from './routes/restaurant.routes';
 import { apiRateLimit } from './middlewares/rateLimit.middleware';
 import { errorHandler } from './middlewares/error.middleware';
 import { traceMiddleware } from './middlewares/trace.middleware';
-import { register } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export function createServer() {
   const app = express();
+
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'api-gateway-service'));
 
   app.use(express.json());
   app.use(apiRateLimit as any);

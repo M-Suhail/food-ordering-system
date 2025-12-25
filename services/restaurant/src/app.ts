@@ -5,9 +5,11 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger/swagger';
 import { traceMiddleware } from './middlewares/trace.middleware';
 import { register } from '@food/observability';
+import { metricsMiddleware } from '@food/observability';
 
 export function createServer() {
   const app = express();
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'restaurant-service'));
   app.use(express.json());
   app.use(traceMiddleware);
 

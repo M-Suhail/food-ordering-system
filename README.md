@@ -25,7 +25,8 @@ food-ordering-system/
 ├── .prettierrc
 ├── README.md
 ├── infra/
-│   └── docker-compose.yml
+│   |── docker-compose.yml
+│   └── prometheus.yml
 ├── package.json
 ├── tsconfig.base.json
 ├── packages/
@@ -425,6 +426,17 @@ npm run dev:notification
 - [x] Maintained clean separation between observability concerns and domain logic
 - [x] No persistence of tracing metadata in service databases (logs only)
 - [x] Note: Metrics and distributed tracing backends (Prometheus, OpenTelemetry, Jaeger) are intentionally deferred to later phases.
+
+### Phase 6.2: Metrics & Observability Surface  ✅
+- [x] Extended the shared `@food/observability` package to include metrics support
+- [x] Implemented HTTP request metrics middleware (request count, latency, status codes)
+- [x] Standardized metrics integration across all HTTP-facing services
+- [x] Exposed `/metrics` endpoint for Prometheus scraping
+- [x] Ensured metrics include service-level labels (service name, method, route, status)
+- [x] Normalized route labeling to avoid high-cardinality metrics
+- [x] Integrated metrics middleware early in request lifecycle (before routing)
+- [x] Maintained separation between metrics collection and business logic
+- [x] Verified observability compatibility across monorepo and workspaces
 
 ## Environment Variables
 

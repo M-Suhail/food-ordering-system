@@ -11,6 +11,8 @@ import {
   type PaymentSucceededV1
 } from '@food/event-contracts';
 
+import { metricsMiddleware } from '@food/observability';
+
 export async function createServer() {
   await initRabbitMQ();
   const channel = getChannel();
@@ -63,6 +65,7 @@ export async function createServer() {
   );
 
   const app = express();
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'delivery-service'));
   app.get('/health', (_, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_, res) => res.json({ status: 'ready' }));
   return app;

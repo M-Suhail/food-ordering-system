@@ -1,10 +1,12 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import { traceMiddleware } from './middlewares/trace.middleware';
-import { register } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export function createServer() {
   const app = express();
+
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'auth-service'));
 
   app.use(express.json());
   app.use(traceMiddleware);

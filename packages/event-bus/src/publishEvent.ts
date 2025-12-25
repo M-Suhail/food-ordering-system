@@ -7,7 +7,7 @@ export async function publishEvent<T>(
   channel: Channel,
   routingKey: string,
   envelope: EventEnvelope<T>
-) {
+): Promise<void> {
   const payload = Buffer.from(JSON.stringify(envelope));
 
   channel.publish(
@@ -16,8 +16,12 @@ export async function publishEvent<T>(
     payload,
     {
       contentType: 'application/json',
-      persistent: true
+      persistent: true,
+      headers: {
+        traceId: envelope.traceId // Phase 6.1: propagate trace context
+      }
     }
   );
 }
+
 

@@ -8,6 +8,7 @@ import {
   type OrderCreatedV1
 } from '@food/event-contracts';
 import { logger } from './lib/logger';
+import { metricsMiddleware } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -69,6 +70,7 @@ export async function createServer() {
   );
 
   const app = express();
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'kitchen-service'));
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
 

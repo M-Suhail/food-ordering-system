@@ -8,6 +8,7 @@ import {
   KitchenAcceptedV1Schema,
   type KitchenAcceptedV1
 } from '@food/event-contracts';
+import { metricsMiddleware } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -73,6 +74,7 @@ export async function createServer() {
   );
 
   const app = express();
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'payment-service'));
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
   return app;
