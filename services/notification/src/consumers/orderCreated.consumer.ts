@@ -5,13 +5,17 @@ import {
 } from '@food/event-contracts';
 import { getDb } from '../lib/mongo';
 import { sendNotification } from '../notifications/sendNotification';
+import { logger } from '../lib/logger';
 
 export async function registerOrderCreatedConsumer(channel: any) {
   await consumeEvent<OrderCreatedV1>(
     channel,
     'notification.order_created',
     OrderCreatedV1Schema,
-    async (data) => {
+    async (data, envelope) => {
+      const { traceId } = envelope;
+      const log = logger.child({ traceId });
+      
       const db = getDb();
       const eventKey = `order_created_${data.orderId}`;
 

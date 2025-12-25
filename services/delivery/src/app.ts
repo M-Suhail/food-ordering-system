@@ -3,6 +3,7 @@ import express from 'express';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { connectMongo } from './lib/mongo';
 import { assignDriver } from './assign/assignDriver';
+import { logger } from './lib/logger';
 
 import { consumeEvent, publishEvent } from '@food/event-bus';
 import {
@@ -22,7 +23,10 @@ export async function createServer() {
     channel,
     'delivery_service.payment_succeeded',
     PaymentSucceededV1Schema,
-    async (data) => {
+    async (data, envelope) => {
+      const { traceId } = envelope;
+      const log = logger.child({ traceId });
+
       const processed = await processedEvents.findOne({
         eventId: data.orderId
       });
@@ -49,6 +53,7 @@ export async function createServer() {
         eventVersion: 1,
         occurredAt: new Date().toISOString(),
         producer: 'delivery-service',
+        traceId,
         data: {
           orderId: data.orderId,
           driverId

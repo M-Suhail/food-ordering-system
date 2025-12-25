@@ -1,8 +1,7 @@
 import { getChannel } from '../lib/rabbitmq';
-import { childLogger } from '../lib/logger';
+import { logger } from '../lib/logger';
 
 export async function subscribeOrderCreated() {
-  const logger = childLogger('order.events');
   const ch = getChannel();
   const q = 'order_service.order_created';
   // consume messages

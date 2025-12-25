@@ -3,6 +3,7 @@ import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { prisma } from './lib/db';
 import { processPayment } from './payment/processPayment';
 import { consumeEvent, publishEvent } from '@food/event-bus';
+import { logger } from './lib/logger';
 import {
   KitchenAcceptedV1Schema,
   type KitchenAcceptedV1
@@ -16,7 +17,10 @@ export async function createServer() {
     channel,
     'payment_service.kitchen_accepted',
     KitchenAcceptedV1Schema,
-    async (data) => {
+    async (data, envelope) => {
+
+      const { traceId } = envelope;
+      const log = logger.child({ traceId });
       // Idempotency
       const processed = await prisma.processedEvent.findUnique({
         where: { eventId: data.orderId }
@@ -45,6 +49,7 @@ export async function createServer() {
           eventVersion: 1,
           occurredAt: new Date().toISOString(),
           producer: 'payment-service',
+          traceId,
           data: {
             orderId: data.orderId,
             total: data.total
@@ -57,6 +62,7 @@ export async function createServer() {
           eventVersion: 1,
           occurredAt: new Date().toISOString(),
           producer: 'payment-service',
+          traceId,
           data: {
             orderId: data.orderId,
             reason: result.reason

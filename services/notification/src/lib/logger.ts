@@ -1,6 +1,9 @@
-import pino from 'pino';
+import { createLogger } from '@food/observability';
 
-export const logger = pino({
-  level: process.env.LOG_LEVEL || 'info'
+const serviceName =
+  process.env.SERVICE_NAME ?? 'notification-service';
+
+export const logger = createLogger({
+  serviceName
 });
 

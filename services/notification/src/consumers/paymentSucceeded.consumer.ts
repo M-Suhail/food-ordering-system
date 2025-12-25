@@ -5,13 +5,17 @@ import {
 } from '@food/event-contracts';
 import { getDb } from '../lib/mongo';
 import { sendNotification } from '../notifications/sendNotification';
+import { logger } from '../lib/logger';
 
 export async function registerPaymentSucceededConsumer(channel: any) {
   await consumeEvent<PaymentSucceededV1>(
     channel,
     'notification.payment_succeeded',
     PaymentSucceededV1Schema,
-    async (data) => {
+    async (data, envelope) => {
+      const { traceId } = envelope;
+      const log = logger.child({ traceId });
+      
       const db = getDb();
       const eventKey = `payment_succeeded_${data.orderId}`;
 

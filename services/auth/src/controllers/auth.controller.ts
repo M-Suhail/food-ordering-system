@@ -1,6 +1,21 @@
 import bcrypt from 'bcryptjs';
 import { Request, Response } from 'express';
-import { findUserByEmail } from '../users/user.service';
+import { findUserByEmail, createUser } from '../users/user.service';
+import { CreateUserInput } from '../users/user.model';
+export async function register(req: Request, res: Response) {
+  const { email, password, role } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  try {
+    const user = await createUser({ email, password, role });
+    res.status(201).json({ id: user.id, email: user.email, role: user.role });
+  } catch (err: any) {
+    if (err.code === 'P2002') { // Prisma unique constraint violation
+      return res.status(409).json({ error: 'Email already registered' });
+    }
+    res.status(500).json({ error: 'Registration failed', details: String(err) });
+  }
+}
 import {
   signAccessToken,
   signRefreshToken,

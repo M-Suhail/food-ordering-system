@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // usage:
 // npm run new:service -- auth
 // npm run new:service -- --name=auth

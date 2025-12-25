@@ -4,5 +4,6 @@ export interface EventEnvelope<T> {
   eventVersion: number;
   occurredAt: string;
   producer: string;
+  traceId: string;
   data: T;
 }

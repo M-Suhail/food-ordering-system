@@ -7,6 +7,7 @@ import {
   OrderCreatedV1Schema,
   type OrderCreatedV1
 } from '@food/event-contracts';
+import { logger } from './lib/logger';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -16,7 +17,10 @@ export async function createServer() {
     channel,
     'kitchen_service.order_created',
     OrderCreatedV1Schema,
-    async (data) => {
+    async (data, envelope) => {
+      const { traceId } = envelope;
+      const log = logger.child({ traceId });
+
       // Idempotency
       const processed = await prisma.processedEvent.findUnique({
         where: { eventId: data.orderId }
@@ -44,6 +48,7 @@ export async function createServer() {
           eventVersion: 1,
           occurredAt: new Date().toISOString(),
           producer: 'kitchen-service',
+          traceId,
           data: { orderId: data.orderId }
         });
       } else {
@@ -53,6 +58,7 @@ export async function createServer() {
           eventVersion: 1,
           occurredAt: new Date().toISOString(),
           producer: 'kitchen-service',
+          traceId,
           data: {
             orderId: data.orderId,
             reason: decision.reason

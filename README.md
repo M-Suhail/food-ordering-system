@@ -27,6 +27,7 @@ food-ordering-system/
 ├── infra/
 │   └── docker-compose.yml
 ├── package.json
+├── tsconfig.base.json
 ├── packages/
 │   ├── event-bus/
 │   │   ├── package.json
@@ -35,20 +36,28 @@ food-ordering-system/
 │   │       ├── consumeEvent.ts
 │   │       ├── index.ts
 │   │       └── publishEvent.ts
-│   └── event-contracts/
+│   ├── event-contracts/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── envelope/
+│   │       │   └── event-envelope.ts
+│   │       ├── events/
+│   │       │   ├── delivery-assigned.v1.ts
+│   │       │   ├── kitchen-accepted.v1.ts
+│   │       │   ├── kitchen-rejected.v1.ts
+│   │       │   ├── order-created.v1.ts
+│   │       │   ├── payment-failed.v1.ts
+│   │       │   ├── payment-succeeded.v1.ts
+│   │       │   └── index.ts
+│   └── observability/
 │       ├── package.json
 │       ├── tsconfig.json
 │       └── src/
-│           ├── envelope/
-│           │   └── event-envelope.ts
-│           └── events/
-│               ├── delivery-assigned.v1.ts
-│               ├── kitchen-accepted.v1.ts
-│               ├── kitchen-rejected.v1.ts
-│               ├── order-created.v1.ts
-│               ├── payment-failed.v1.ts
-│               ├── payment-succeeded.v1.ts
-│               └── index.ts
+│           ├── index.ts
+│           ├── logger.ts
+│           ├── metrics.ts
+│           └── trace.ts
 ├── scripts/
 │   └── new-service.js
 ├── services/
@@ -63,12 +72,19 @@ food-ordering-system/
 │   │   └── src/
 │   │       ├── app.ts
 │   │       ├── server.ts
-│   │       ├── events/
-│   │       │   └── publishOrderCreated.ts
+│   │       ├── controllers/
+│   │       │   └── auth.controller.ts
 │   │       ├── lib/
 │   │       │   ├── db.ts
-│   │       │   ├── logger.ts
-│   │       │   └── rabbitmq.ts
+│   │       │   ├── jwt.ts
+│   │       │   └── logger.ts
+│   │       ├── middleware/
+|   |       |   ├── trace.middleware.ts
+│   │       │   └── authorize.ts
+│   │       ├── tokens/
+│   │       │   └── refreshToken.service.ts
+│   │       ├── routes/
+│   │       │   └── auth.routes.ts
 │   │       └── users/
 │   │           ├── user.model.ts
 │   │           └── user.service.ts
@@ -95,8 +111,6 @@ food-ordering-system/
 │   │   │   └── schema.prisma
 │   │   └── src/
 │   │       ├── app.ts
-│   │       ├── controllers/
-│   │       │   └── healthController.ts
 │   │       ├── decision/
 │   │       │   └── decideKitchen.ts
 │   │       ├── lib/
@@ -177,7 +191,9 @@ food-ordering-system/
 │   |       │   └── restaurants.controller.ts
 │   |       ├── lib/
 │   |       │   ├── db.ts
-│   |       │   ├── logger.ts
+│   |       │   └── logger.ts
+│   │       ├── middleware/
+|   |       |   └── trace.middleware.ts
 │   |       ├── routes/
 │   |       │   ├── health.ts
 │   |       │   └── restaurants.ts
@@ -201,13 +217,13 @@ food-ordering-system/
 │           ├── middlewares/
 │           │   ├── auth.middleware.ts
 │           │   ├── error.middleware.ts
+│           │   ├── trace.middleware.ts
 │           │   └── rateLimit.middleware.ts
 │           ├── routes/
 │           │   ├── auth.routes.ts
 │           │   ├── order.routes.ts
 │           │   └── restaurant.routes.ts
 │           └── server.ts
-└── tsconfig.base.json
 ```
 
 ## Getting Started
@@ -383,6 +399,33 @@ npm run dev:notification
 - [x] Kept Auth service APIs intentionally minimal (no login yet)
 - [x] Note: Public authentication APIs (login, register, token issuance) will be introduced in Phase 5.2 to maintain clear separation between persistence and authentication flows.
 
+### Phase 5.2: Authentication APIs & JWT Issuance ✅
+- [x] Implemented public authentication APIs (/auth/register, /auth/login)
+- [x] Integrated secure password verification using bcrypt
+- [x] Added JWT access token issuance for authenticated users
+- [x] Enforced basic input validation and error handling
+- [x] Connected authentication flow to persisted User model
+- [x] Prepared Auth service for API Gateway integration
+- [x] Note: Refresh tokens, token rotation, and fine-grained authorization will be implemented in Phase 5.3 to keep this phase focused on core authentication flows.
+
+### Phase 5.3: Authorization & Refresh Tokens ✅
+- [x] Added refresh token support with rotation
+- [x] Implemented refresh token persistence and revocation
+- [x] Embedded role claims in JWTs
+- [x] Introduced authorization middleware (RBAC-ready)
+- [x] Extended Auth APIs with token refresh endpoint
+
+### Phase 6.1: Observability Foundation (Logging & Tracing) ✅
+- [x] Introduced a shared @food/observability package for standardized logging
+- [x] Centralized structured logging using Pino across all services
+- [x] Implemented trace propagation via event envelopes (traceId)
+- [x] Updated all event consumers to receive (data, envelope)
+- [x] Ensured trace context is extracted and applied to child loggers
+- [x] Enforced trace propagation when publishing downstream events
+- [x] Maintained clean separation between observability concerns and domain logic
+- [x] No persistence of tracing metadata in service databases (logs only)
+- [x] Note: Metrics and distributed tracing backends (Prometheus, OpenTelemetry, Jaeger) are intentionally deferred to later phases.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure as needed:
@@ -397,4 +440,6 @@ ORDER_SERVICE_URL=http://localhost:3002
 RESTAURANT_SERVICE_URL=http://localhost:3003
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX=100
+SERVICE_NAME=service-name
+LOG_LEVEL=level
 ```

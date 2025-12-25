@@ -1,14 +1,23 @@
 import { Channel } from 'amqplib';
+import { EventEnvelope } from '@food/event-contracts';
 
-export async function publishEvent(
+const EVENTS_EXCHANGE = 'events';
+
+export async function publishEvent<T>(
   channel: Channel,
   routingKey: string,
-  payload: unknown
+  envelope: EventEnvelope<T>
 ) {
+  const payload = Buffer.from(JSON.stringify(envelope));
+
   channel.publish(
-    'events',
+    EVENTS_EXCHANGE,
     routingKey,
-    Buffer.from(JSON.stringify(payload)),
-    { persistent: true }
+    payload,
+    {
+      contentType: 'application/json',
+      persistent: true
+    }
   );
 }
+

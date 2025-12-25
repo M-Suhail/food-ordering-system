@@ -1,7 +1,9 @@
-import pino from 'pino';
+import { createLogger } from '@food/observability';
 
-const base = pino({ level: process.env.LOG_LEVEL || 'info' });
+const serviceName =
+  process.env.SERVICE_NAME ?? 'auth-service';
 
-export function childLogger(service: string) {
-  return base.child({ service });
-}
+export const logger = createLogger({
+  serviceName
+});
+
