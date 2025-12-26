@@ -8,8 +8,8 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "build": "^0.1.4",
     "pino": "^8.21.0",
     "prom-client": "^15.1.0"
   }
 }
-

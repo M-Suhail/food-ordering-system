@@ -1,6 +1,9 @@
 import { Channel, ConsumeMessage } from 'amqplib';
 import { ZodSchema } from 'zod';
+import { trace, context, SpanKind } from '@opentelemetry/api';
 import { EventEnvelope } from '@food/event-contracts';
+
+const tracer = trace.getTracer('event-bus');
 
 export async function consumeEvent<T>(
   channel: Channel,
@@ -11,24 +14,46 @@ export async function consumeEvent<T>(
   await channel.consume(queue, async (msg: ConsumeMessage | null) => {
     if (!msg) return;
 
-    try {
-      const raw = JSON.parse(msg.content.toString()) as EventEnvelope<unknown>;
+    const raw = JSON.parse(msg.content.toString()) as EventEnvelope<unknown>;
 
-      const data = schema.parse(raw.data);
+    const traceId =
+      raw.traceId ??
+      (msg.properties.headers?.traceId as string | undefined) ??
+      'unknown';
 
-      const envelope: EventEnvelope<T> = {
-        ...raw,
-        data
-      };
+    return tracer.startActiveSpan(
+      `consume ${queue}`,
+      {
+        kind: SpanKind.CONSUMER,
+        attributes: {
+          'messaging.system': 'rabbitmq',
+          'messaging.destination': queue,
+          traceId
+        }
+      },
+      async span => {
+        try {
+          const data = schema.parse(raw.data);
 
-      await handler(data, envelope);
+          const envelope: EventEnvelope<T> = {
+            ...raw,
+            traceId,
+            data
+          };
 
-      channel.ack(msg);
-    } catch (err) {
-      // Phase 6.1: poison messages go to DLQ
-      channel.nack(msg, false, false);
-    }
+          await handler(data, envelope);
+
+          channel.ack(msg);
+        } catch (err) {
+          span.recordException(err as Error);
+          channel.nack(msg, false, false);
+        } finally {
+          span.end();
+        }
+      }
+    );
   });
 }
+
 
 

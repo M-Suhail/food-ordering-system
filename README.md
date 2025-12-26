@@ -438,6 +438,16 @@ npm run dev:notification
 - [x] Maintained separation between metrics collection and business logic
 - [x] Verified observability compatibility across monorepo and workspaces
 
+### Phase 6.3: Distributed Tracing (OpenTelemetry) ✅
+- [x] Integrated OpenTelemetry SDK for Node.js
+- [x] Enabled automatic HTTP and Express instrumentation
+- [x] Enabled context propagation across async boundaries
+- [x] Propagated trace context through RabbitMQ event envelopes
+- [x] Linked logs, metrics, and traces using shared traceId
+- [x] Exported traces using OTLP (vendor-agnostic)
+- [x] Standardized tracing bootstrap across all services
+- [x] Ensured tracing is non-invasive to domain logic
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure as needed:
