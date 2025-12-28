@@ -26,7 +26,16 @@ food-ordering-system/
 ├── README.md
 ├── infra/
 │   |── docker-compose.yml
-│   └── prometheus.yml
+│   └── observability
+│       ├── docker-compose.observability.yml
+│       ├── grafana/
+│       │   └── dashbaords/
+│       │       ├── events.json
+│       │       ├── http-latency.json
+│       │       └── system-overview.json
+│       └── prometheus/
+│           ├── alerts.yml
+│           └── prometheus.yml
 ├── package.json
 ├── tsconfig.base.json
 ├── packages/
@@ -43,22 +52,24 @@ food-ordering-system/
 │   │   └── src/
 │   │       ├── envelope/
 │   │       │   └── event-envelope.ts
-│   │       ├── events/
-│   │       │   ├── delivery-assigned.v1.ts
-│   │       │   ├── kitchen-accepted.v1.ts
-│   │       │   ├── kitchen-rejected.v1.ts
-│   │       │   ├── order-created.v1.ts
-│   │       │   ├── payment-failed.v1.ts
-│   │       │   ├── payment-succeeded.v1.ts
-│   │       │   └── index.ts
+│   │       └── events/
+│   │           ├── delivery-assigned.v1.ts
+│   │           ├── kitchen-accepted.v1.ts
+│   │           ├── kitchen-rejected.v1.ts
+│   │           ├── order-created.v1.ts
+│   │           ├── payment-failed.v1.ts
+│   │           ├── payment-succeeded.v1.ts
+│   │           └── index.ts
 │   └── observability/
 │       ├── package.json
 │       ├── tsconfig.json
 │       └── src/
 │           ├── index.ts
 │           ├── logger.ts
+│           ├── metrics.middleware.ts
 │           ├── metrics.ts
-│           └── trace.ts
+│           ├── trace.ts
+│           └── tracing.ts
 ├── scripts/
 │   └── new-service.js
 ├── services/
@@ -448,20 +459,54 @@ npm run dev:notification
 - [x] Standardized tracing bootstrap across all services
 - [x] Ensured tracing is non-invasive to domain logic
 
+### Phase 6.4: Observability Runtime (Metrics & Dashboards) ✅
+- [x] Prometheus runtime configured for all services
+- [x] Centralized metrics scraping via /metrics endpoints
+- [x] Grafana dashboards for HTTP, events, and system health
+- [x] Alerting rules for service downtime, failures, and DLQs
+- [x] Docker-based observability stack added
+- [x] No application code changes required
+
+## Observability Dashboards
+
+- **Prometheus (metrics explorer):**  
+	[http://localhost:9090](http://localhost:9090)
+
+- **Grafana (visual dashboards):**  
+	[http://localhost:3009](http://localhost:3009)  
+	Default login: `admin` / `admin` (change after first login)
+
+You can use Prometheus to query raw metrics and Grafana to view pre-built dashboards for system health, HTTP traffic, and events.
+If you have custom dashboards or alerts, mention their location or import instructions here.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` and configure as needed:
 
 ```
+# --- Messaging / Queue ---
 RABBITMQ_URL=amqp://guest:guest@localhost:5672
+
+# --- Database ---
 DATABASE_URL=postgres://postgres:password@localhost:5432/postgres
 MONGO_URL=mongodb://localhost:27017
-JWT_SECRET=replace_me
-AUTH_SERVICE_URL=http://localhost:3001
-ORDER_SERVICE_URL=http://localhost:3002
-RESTAURANT_SERVICE_URL=http://localhost:3003
+
+# --- Auth / Security ---
+JWT_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_PUBLIC_KEY=your_public_key
+
+# --- Rate Limiting ---
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX=100
+
+# --- Service Identity & Logging ---
 SERVICE_NAME=service-name
-LOG_LEVEL=level
+LOG_LEVEL=info
+OTEL_SERVICE_NAME=service-name
+
+# --- Observability ---
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318/v1/traces
+OTEL_TRACES_EXPORTER=otlp
+OTEL_METRICS_EXPORTER=none
 ```

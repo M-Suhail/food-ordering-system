@@ -66,6 +66,11 @@ export async function createServer() {
 
   const app = express();
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'delivery-service'));
+  const { register } = require('@food/observability');
+  app.get('/metrics', async (_req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
   app.get('/health', (_, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_, res) => res.json({ status: 'ready' }));
   return app;

@@ -1,0 +1,44 @@
+{
+  "title": "Event Flow",
+  "uid": "event-flow",
+  "schemaVersion": 38,
+  "version": 1,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Published Events",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(events_published_total[1m])) by (event)",
+          "legendFormat": "{{event}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Consumed Events",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(events_consumed_total[1m])) by (event)",
+          "legendFormat": "{{event}}"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Event Failures (DLQ)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(events_failed_total[1m])",
+          "legendFormat": "Failed"
+        }
+      ],
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 }
+    }
+  ]
+}

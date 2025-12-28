@@ -70,7 +70,12 @@ export async function createServer() {
   );
 
   const app = express();
-  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'kitchen-service'));
+    const { register } = require('@food/observability');
+    app.use(metricsMiddleware(process.env.SERVICE_NAME || 'kitchen-service'));
+    app.get('/metrics', async (_req, res) => {
+      res.set('Content-Type', register.contentType);
+      res.end(await register.metrics());
+    });
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   app.get('/ready', (_req, res) => res.json({ status: 'ready' }));
 

@@ -25,7 +25,12 @@ export async function createServer() {
   await registerDeliveryAssignedConsumer(channel);
 
   const app = express();
-   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'notification-service'));
+  app.use(metricsMiddleware(process.env.SERVICE_NAME || 'notification-service'));
+  const { register } = require('@food/observability');
+  app.get('/metrics', async (_req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
   return app;
 }

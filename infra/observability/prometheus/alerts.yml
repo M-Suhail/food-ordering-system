@@ -1,0 +1,29 @@
+groups:
+  - name: service-health
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "A service has stopped responding to Prometheus"
+
+  - name: event-processing
+    rules:
+      - alert: EventProcessingFailures
+        expr: rate(events_consume_failed_total[1m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Event consumption failures detected"
+
+      - alert: DLQMessages
+        expr: events_dlq_total > 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Messages in DLQ detected"
