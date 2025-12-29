@@ -85,6 +85,7 @@ food-ordering-system/
 │   │       ├── app.ts
 │   │       ├── server.ts
 │   │       ├── controllers/
+│   │       │   ├── login.controller.ts
 │   │       │   └── auth.controller.ts
 │   │       ├── lib/
 │   │       │   ├── db.ts
@@ -466,6 +467,14 @@ npm run dev:notification
 - [x] Alerting rules for service downtime, failures, and DLQs
 - [x] Docker-based observability stack added
 - [x] No application code changes required
+
+### Phase 7.1: Authentication Hardening ✅
+- [x] Enforced JWT authentication at the API Gateway
+- [x] Introduced centralized auth middleware for protected routes
+- [x] Propagated authenticated user context via trusted headers
+- [x] Clearly separated public and protected endpoints
+- [x] Ensured downstream services remain stateless and trust gateway context
+- [x] No changes to event contracts or async workflows
 
 ## Observability Dashboards
 
