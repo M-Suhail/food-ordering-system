@@ -1,4 +1,6 @@
+import routes from './routes';
 import express from 'express';
+import { swaggerSpec, swaggerUi } from './swagger';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { prisma } from './lib/db';
 import { logger } from './lib/logger';
@@ -100,6 +102,9 @@ export async function createServer() {
   );
 
   const app = express();
+    app.use(routes);
+    // Swagger docs
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'order-service'));
   const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {

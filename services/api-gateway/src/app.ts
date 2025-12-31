@@ -1,4 +1,5 @@
 import express from 'express';
+import { swaggerSpec, swaggerUi } from './swagger';
 import authRoutes from './routes/auth.routes';
 import orderRoutes from './routes/order.routes';
 import restaurantRoutes from './routes/restaurant.routes';
@@ -14,6 +15,8 @@ import { metricsMiddleware, register } from '@food/observability';
 export function createServer() {
   const app = express();
 
+  // Swagger docs
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   // Metrics FIRST
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'api-gateway'));
 

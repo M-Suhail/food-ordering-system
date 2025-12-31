@@ -17,6 +17,8 @@
     "dotenv": "^16.6.1",
     "express": "^4.18.2",
     "zod": "^3.23.0"
+      ,"swagger-jsdoc": "^6.2.8"
+      ,"swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "prisma": "^6.9.0",

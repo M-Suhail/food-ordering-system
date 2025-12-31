@@ -1,4 +1,6 @@
+import routes from './routes';
 import express from 'express';
+import { swaggerSpec, swaggerUi } from './swagger';
 import { initMongo } from './lib/mongo';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 
@@ -25,7 +27,10 @@ export async function createServer() {
   await registerDeliveryAssignedConsumer(channel);
 
   const app = express();
+    app.use(routes);
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'notification-service'));
+    // Swagger docs
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);

@@ -1,5 +1,7 @@
+import routes from './routes';
 import 'dotenv/config';
 import express from 'express';
+import { swaggerSpec, swaggerUi } from './swagger';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { connectMongo } from './lib/mongo';
 import { assignDriver } from './assign/assignDriver';
@@ -66,6 +68,9 @@ export async function createServer() {
 
   const app = express();
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'delivery-service'));
+    app.use(routes);
+    // Swagger docs
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);

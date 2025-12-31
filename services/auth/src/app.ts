@@ -1,11 +1,15 @@
+
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import { traceMiddleware } from './middlewares/trace.middleware';
 import { metricsMiddleware, register } from '@food/observability';
+import { swaggerSpec, swaggerUi } from './swagger';
 
 export function createServer() {
   const app = express();
 
+  // Swagger docs
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'auth-service'));
 
   app.use(express.json());

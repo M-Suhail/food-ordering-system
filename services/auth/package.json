@@ -19,6 +19,8 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "pino": "^8.0.0"
+    ,"swagger-jsdoc": "^6.2.8"
+    ,"swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",

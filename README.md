@@ -79,11 +79,13 @@ food-ordering-system/
 │   │   ├── Dockerfile
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── src/
 │   │       ├── app.ts
 │   │       ├── server.ts
+│   │       ├── swagger.ts
 │   │       ├── controllers/
 │   │       │   ├── login.controller.ts
 │   │       │   └── auth.controller.ts
@@ -106,8 +108,10 @@ food-ordering-system/
 │   │   ├── .env.example
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   └── src/
 │   │       ├── app.ts
+│   │       ├── swagger.ts
 │   │       ├── assign/
 │   │       │   └── assignDriver.ts
 │   │       ├── lib/
@@ -120,10 +124,12 @@ food-ordering-system/
 │   │   ├── .env.example
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── src/
 │   │       ├── app.ts
+│   │       ├── swagger.ts
 │   │       ├── decision/
 │   │       │   └── decideKitchen.ts
 │   │       ├── lib/
@@ -136,8 +142,10 @@ food-ordering-system/
 │   │   ├── .env.example
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   └── src/
 │   │       ├── app.ts
+│   │       ├── swagger.ts
 │   │       ├── consumers/
 │   │       │   ├── deliveryAssigned.consumer.ts
 │   │       │   ├── kitchenAccepted.consumer.ts
@@ -158,6 +166,7 @@ food-ordering-system/
 │   │   ├── Dockerfile
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── src/
@@ -178,10 +187,12 @@ food-ordering-system/
 │   │   ├── .env.example
 │   │   ├── package.json
 │   │   ├── tsconfig.json
+│   │   ├── README.md
 │   │   ├── prisma/
 │   │   │   └── schema.prisma
 │   │   └── src/
 │   │       ├── app.ts
+│   │       ├── swagger.ts
 │   │       ├── lib/
 │   │       │   ├── db.ts
 │   │       │   ├── logger.ts
@@ -194,6 +205,7 @@ food-ordering-system/
 │   |   ├── .env.example
 │   |   ├── package.json
 │   |   ├── tsconfig.json
+│   │   ├── README.md
 │   |   ├── prisma/
 │   |   │   └── schema.prisma
 │   |   └── src/
@@ -222,6 +234,7 @@ food-ordering-system/
 │       ├── .env.example
 │       ├── package.json
 │       ├── tsconfig.json
+│       ├── README.md
 │       └── src/
 │           ├── app.ts
 │           ├── lib/
@@ -237,6 +250,7 @@ food-ordering-system/
 │           │   ├── auth.routes.ts
 │           │   ├── order.routes.ts
 │           │   └── restaurant.routes.ts
+│           ├── swagger.ts
 │           └── server.ts
 ```
 
@@ -491,6 +505,13 @@ npm run dev:notification
 - [x] Backend services trust only gateway-provided identity headers
 - [x] Introduced contract-first request validation at gateway boundary
 - [x] Clearly defined public vs protected API surface
+
+### Phase 8: Documentation & Developer Experience ✅
+- [x] Per-service README.md files created with setup, API, and environment details
+- [x] Swagger/OpenAPI documentation available for every service at /docs
+- [x] API endpoints documented with OpenAPI JSDoc comments for discoverability
+- [x] .env.example files provided for all services, documenting required environment variables
+- [x] Onboarding steps and local development instructions standardized across the project
 
 ## Observability Dashboards
 
