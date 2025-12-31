@@ -484,6 +484,14 @@ npm run dev:notification
 - [x] Enforced RBAC centrally at the API Gateway
 - [x] Kept downstream services authorization-agnostic
 
+### Phase 7.3: Authorization Hardening & API Contracts ✅
+- [x] Enforced fine-grained role-based access control at API Gateway
+- [x] Distinguished USER and ADMIN access at route level
+- [x] Prevented privilege escalation by isolating JWT verification to gateway
+- [x] Backend services trust only gateway-provided identity headers
+- [x] Introduced contract-first request validation at gateway boundary
+- [x] Clearly defined public vs protected API surface
+
 ## Observability Dashboards
 
 - **Prometheus (metrics explorer):**  

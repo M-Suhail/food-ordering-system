@@ -2,22 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface JwtPayload {
-  sub?: string;
-  userId?: string;
+  userId: string;
   email: string;
-  role?: string;
-}
-
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role?: string;
-  };
+  role: string;
 }
 
 export function authMiddleware(
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) {
@@ -27,7 +18,7 @@ export function authMiddleware(
     return res.status(401).json({ message: 'Missing Authorization header' });
   }
 
-  const token = header.slice('Bearer '.length);
+  const token = header.replace('Bearer ', '');
 
   try {
     const payload = jwt.verify(
@@ -35,21 +26,17 @@ export function authMiddleware(
       process.env.JWT_SECRET!
     ) as JwtPayload;
 
-    const userId = payload.sub || payload.userId;
-
-    if (!userId) {
-      return res.status(401).json({ message: 'Invalid token payload' });
+    if (!payload.role) {
+      return res.status(403).json({ message: 'Role missing in token' });
     }
 
-    req.user = {
-      id: userId,
-      email: payload.email,
-      role: payload.role
-    };
+    // Gateway identity propagation
+    req.headers['x-user-id'] = payload.userId;
+    req.headers['x-user-email'] = payload.email;
+    req.headers['x-user-role'] = payload.role;
 
     next();
   } catch {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 }
-
