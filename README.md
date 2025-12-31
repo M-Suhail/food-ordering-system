@@ -229,6 +229,7 @@ food-ordering-system/
 │           │   └── proxy.ts
 │           ├── middlewares/
 │           │   ├── auth.middleware.ts
+│           │   ├── authorize.middleware.ts
 │           │   ├── error.middleware.ts
 │           │   ├── trace.middleware.ts
 │           │   └── rateLimit.middleware.ts
@@ -475,6 +476,13 @@ npm run dev:notification
 - [x] Clearly separated public and protected endpoints
 - [x] Ensured downstream services remain stateless and trust gateway context
 - [x] No changes to event contracts or async workflows
+
+### Phase 7.2: Authorization (RBAC) ✅
+- [x] Added role field to User model
+- [x] Embedded role claims in JWT tokens
+- [x] Implemented role-based authorization middleware
+- [x] Enforced RBAC centrally at the API Gateway
+- [x] Kept downstream services authorization-agnostic
 
 ## Observability Dashboards
 

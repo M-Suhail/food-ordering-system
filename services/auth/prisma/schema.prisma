@@ -11,10 +11,15 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String
-  role         String   @default("user")
+  role         Role   @default(USER)
   refreshTokens RefreshToken[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model RefreshToken {

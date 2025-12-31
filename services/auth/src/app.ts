@@ -24,7 +24,7 @@ export function createServer() {
     res.json({ status: 'ready' });
   });
 
-  app.use('/auth', authRoutes);
+  app.use('/', authRoutes);
 
   return app;
 }

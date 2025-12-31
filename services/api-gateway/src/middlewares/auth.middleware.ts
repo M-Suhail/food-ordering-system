@@ -2,13 +2,22 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 interface JwtPayload {
-  userId: string;
+  sub?: string;
+  userId?: string;
   email: string;
   role?: string;
 }
 
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    role?: string;
+  };
+}
+
 export function authMiddleware(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
@@ -18,7 +27,7 @@ export function authMiddleware(
     return res.status(401).json({ message: 'Missing Authorization header' });
   }
 
-  const token = header.replace('Bearer ', '');
+  const token = header.slice('Bearer '.length);
 
   try {
     const payload = jwt.verify(
@@ -26,14 +35,21 @@ export function authMiddleware(
       process.env.JWT_SECRET!
     ) as JwtPayload;
 
-    req.headers['x-user-id'] = payload.sub || payload.userId;
-    req.headers['x-user-email'] = payload.email;
-    if (payload.role) {
-      req.headers['x-user-role'] = payload.role;
+    const userId = payload.sub || payload.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Invalid token payload' });
     }
+
+    req.user = {
+      id: userId,
+      email: payload.email,
+      role: payload.role
+    };
 
     next();
   } catch {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 }
+
