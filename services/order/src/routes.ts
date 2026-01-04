@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { health } from './controllers/healthController';
+import { cancelOrder } from './controllers/cancelOrder';
 import { subscribeOrderCreated } from './events/subscribeOrderCreated';
 
 import { getChannel } from './lib/rabbitmq';
@@ -24,6 +25,44 @@ const router = Router();
  *                   type: string
  */
 router.get('/health', health);
+
+/**
+ * @openapi
+ * /orders/{orderId}/cancel:
+ *   post:
+ *     summary: Cancel an order (triggers compensation workflow)
+ *     parameters:
+ *       - in: path
+ *         name: orderId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: header
+ *         name: idempotency-key
+ *         description: Unique key for idempotency (UUID recommended)
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 enum: ['customer_requested']
+ *             required:
+ *               - reason
+ *     responses:
+ *       200:
+ *         description: Cancellation initiated
+ *       400:
+ *         description: Invalid request
+ *       404:
+ *         description: Order not found
+ */
+router.post('/orders/:orderId/cancel', cancelOrder);
 
 // management route to start subscriber during dev
 /**

@@ -54,22 +54,37 @@ food-ordering-system/
 │   │       │   └── event-envelope.ts
 │   │       └── events/
 │   │           ├── delivery-assigned.v1.ts
+│   │           ├── delivery-cancelled.v1.ts
 │   │           ├── kitchen-accepted.v1.ts
+│   │           ├── kitchen-order-cancelled.v1.ts
 │   │           ├── kitchen-rejected.v1.ts
 │   │           ├── order-created.v1.ts
+│   │           ├── order-cancelled.v1.ts
 │   │           ├── payment-failed.v1.ts
 │   │           ├── payment-succeeded.v1.ts
+│   │           ├── payment-refund.v1.ts
 │   │           └── index.ts
-│   └── observability/
+│   ├── idempotency/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       └── index.ts
+│   ├── observability/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── index.ts
+│   │       ├── logger.ts
+│   │       ├── metrics.middleware.ts
+│   │       ├── metrics.ts
+│   │       ├── trace.ts
+│   │       └── tracing.ts
+│   └── resilience/
 │       ├── package.json
 │       ├── tsconfig.json
 │       └── src/
 │           ├── index.ts
-│           ├── logger.ts
-│           ├── metrics.middleware.ts
-│           ├── metrics.ts
-│           ├── trace.ts
-│           └── tracing.ts
+│           └── dlq.ts
 ├── scripts/
 │   └── new-service.js
 ├── services/
@@ -114,6 +129,8 @@ food-ordering-system/
 │   │       ├── swagger.ts
 │   │       ├── assign/
 │   │       │   └── assignDriver.ts
+│   │       ├── events/
+│   │       │   └── subscribeDeliveryCancellation.ts
 │   │       ├── lib/
 │   │       │   ├── logger.ts
 │   │       │   ├── mongo.ts
@@ -132,6 +149,8 @@ food-ordering-system/
 │   │       ├── swagger.ts
 │   │       ├── decision/
 │   │       │   └── decideKitchen.ts
+│   │       ├── events/
+│   │       │   └── subscribeOrderCancellation.ts
 │   │       ├── lib/
 │   │       │   ├── db.ts
 │   │       │   ├── logger.ts
@@ -148,10 +167,13 @@ food-ordering-system/
 │   │       ├── swagger.ts
 │   │       ├── consumers/
 │   │       │   ├── deliveryAssigned.consumer.ts
+│   │       │   ├── deliveryCancelled.consumer.ts
 │   │       │   ├── kitchenAccepted.consumer.ts
 │   │       │   ├── kitchenRejected.consumer.ts
 │   │       │   ├── orderCreated.consumer.ts
+│   │       │   ├── orderCancelled.consumer.ts
 │   │       │   ├── paymentFailed.consumer.ts
+│   │       │   ├── paymentRefund.consumer.ts
 │   │       │   └── paymentSucceeded.consumer.ts
 │   │       ├── lib/
 │   │       │   ├── logger.ts
@@ -172,7 +194,8 @@ food-ordering-system/
 │   │   └── src/
 │   │       ├── app.ts
 │   │       ├── controllers/
-│   │       │   └── healthController.ts
+│   │       │   ├── healthController.ts
+│   │       │   └── cancelOrder.ts
 │   │       ├── events/
 │   │       │   └── subscribeOrderCreated.ts
 │   │       ├── lib/
@@ -512,6 +535,39 @@ npm run dev:notification
 - [x] API endpoints documented with OpenAPI JSDoc comments for discoverability
 - [x] .env.example files provided for all services, documenting required environment variables
 - [x] Onboarding steps and local development instructions standardized across the project
+
+### Phase 9: Advanced Resilience & Compensating Transactions ✅
+- [x] **New Event Contracts**: order.cancelled, payment.refund, kitchen.order.cancelled, delivery.cancelled
+- [x] **Idempotency Package** (@food/idempotency): In-memory store + utilities to prevent duplicate operations
+- [x] **Resilience Package** (@food/resilience): Circuit breaker, exponential backoff retry, timeout utilities, DLQ handler
+- [x] **Order Service**: Added POST /orders/:id/cancel endpoint with idempotency key support
+- [x] **Compensation Flow - Order Cancellation**:
+  - Customer calls cancel endpoint → order status → CANCELLED
+  - Publishes order.cancelled event with refund amount and reason
+- [x] **Kitchen Service Compensation**:
+  - Consumes order.cancelled events
+  - Marks kitchen order as CANCELLED
+  - Publishes kitchen.order.cancelled event for downstream services
+  - Idempotent processing prevents duplicate cancellations
+- [x] **Payment Service Compensation**:
+  - Consumes order.cancelled events → processes refunds
+  - Consumes kitchen.accepted events → initiates payments
+  - On payment.failed → publishes payment.refund event to trigger order cancellation
+  - Marks payment as REFUNDED
+- [x] **Delivery Service Compensation**:
+  - Consumes order.cancelled and kitchen.order.cancelled events
+  - Releases driver assignment → marks delivery as CANCELLED
+  - Publishes delivery.cancelled event
+- [x] **Notification Service**: Added consumers for order.cancelled, payment.refund, delivery.cancelled events
+- [x] **Dead Letter Queue (DLQ) Handler**:
+  - setupDLQConsumer: Consumes messages that failed after max retries
+  - monitorDLQDepth: Tracks DLQ message count and alerts
+  - Logs failures for manual intervention and debugging
+- [x] **Idempotency Pattern**: All compensation handlers track processed events to prevent duplicate processing on service restarts
+- [x] **End-to-End Compensation Flow Validated**:
+  - Order cancellation → Kitchen reversal → Payment refund → Delivery cancellation → Customer notification
+  - Handles payment failures with automatic compensation triggers
+  - All services remain stateless and event-driven
 
 ## Observability Dashboards
 

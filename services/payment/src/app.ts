@@ -8,7 +8,10 @@ import { consumeEvent, publishEvent } from '@food/event-bus';
 import { logger } from './lib/logger';
 import {
   KitchenAcceptedV1Schema,
-  type KitchenAcceptedV1
+  type KitchenAcceptedV1,
+  PaymentRefundV1,
+  OrderCancelledV1Schema,
+  type OrderCancelledV1
 } from '@food/event-contracts';
 import { metricsMiddleware } from '@food/observability';
 
@@ -16,6 +19,9 @@ export async function createServer() {
   await initRabbitMQ();
   const channel = getChannel();
 
+  /**
+   * kitchen.accepted -> Process Payment
+   */
   await consumeEvent<KitchenAcceptedV1>(
     channel,
     'payment_service.kitchen_accepted',
@@ -46,32 +52,141 @@ export async function createServer() {
       });
 
       if (result.status === 'SUCCEEDED') {
-        await publishEvent(channel, 'payment.succeeded', {
-          eventId: `evt-${Date.now()}`,
-          eventType: 'payment.succeeded',
-          eventVersion: 1,
-          occurredAt: new Date().toISOString(),
-          producer: 'payment-service',
-          traceId,
-          data: {
-            orderId: data.orderId,
-            total: data.total
+        await publishEvent(
+          channel,
+          'payment_service.payment_succeeded',
+          {
+            eventId: `pay-${data.orderId}`,
+            eventType: 'payment.succeeded',
+            eventVersion: 1,
+            occurredAt: new Date().toISOString(),
+            producer: 'payment-service',
+            traceId,
+            data: {
+              orderId: data.orderId,
+              amount: data.total ?? 0,
+              succeededAt: new Date().toISOString()
+            }
           }
-        });
+        );
       } else {
-        await publishEvent(channel, 'payment.failed', {
-          eventId: `evt-${Date.now()}`,
-          eventType: 'payment.failed',
+        // Payment failed - trigger compensation
+        await publishEvent(
+          channel,
+          'payment_service.payment_failed',
+          {
+            eventId: `pay-failed-${data.orderId}`,
+            eventType: 'payment.failed',
+            eventVersion: 1,
+            occurredAt: new Date().toISOString(),
+            producer: 'payment-service',
+            traceId,
+            data: {
+              orderId: data.orderId,
+              reason: result.reason,
+              failedAt: new Date().toISOString()
+            }
+          }
+        );
+
+        // Also publish refund event to trigger order cancellation compensation
+        await publishEvent(
+          channel,
+          'payment_service.payment_refund',
+          {
+            eventId: `refund-${data.orderId}`,
+            eventType: 'payment.refund',
+            eventVersion: 1,
+            occurredAt: new Date().toISOString(),
+            producer: 'payment-service',
+            traceId,
+            data: {
+              paymentId: `pay-${data.orderId}`,
+              orderId: data.orderId,
+              amount: data.total ?? 0,
+              reason: 'customer_cancellation' as const,
+              initiatedAt: new Date().toISOString()
+            }
+          }
+        );
+
+        log.warn('Payment failed, compensation triggered');
+      }
+    }
+  );
+
+  /**
+   * order.cancelled -> Process Refund
+   * When order is cancelled by customer, process refund
+   */
+  await consumeEvent<OrderCancelledV1>(
+    channel,
+    'payment_service.order_cancelled',
+    OrderCancelledV1Schema,
+    async (data, envelope) => {
+      const { traceId } = envelope;
+      const log = logger.child({ traceId, orderId: data.orderId });
+
+      // Prevent duplicate refunds
+      const refundEventId = `refund-${data.orderId}`;
+      const processed = await prisma.processedEvent.findUnique({
+        where: { eventId: refundEventId }
+      });
+
+      if (processed) {
+        log.info('Refund already processed');
+        return;
+      }
+
+      // Find the payment record
+      const payment = await prisma.payment.findFirst({
+        where: { orderId: data.orderId }
+      });
+
+      if (!payment) {
+        log.warn('No payment found for refund');
+        // Mark as processed anyway
+        await prisma.processedEvent.create({
+          data: { eventId: refundEventId }
+        });
+        return;
+      }
+
+      // Mark payment as refunded
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: 'REFUNDED',
+          reason: `Refunded due to: ${data.reason}`
+        }
+      });
+
+      // Publish refund event
+      await publishEvent(
+        channel,
+        'payment_service.payment_refund',
+        {
+          eventId: refundEventId,
+          eventType: 'payment.refund',
           eventVersion: 1,
           occurredAt: new Date().toISOString(),
           producer: 'payment-service',
           traceId,
           data: {
+            paymentId: payment.id,
             orderId: data.orderId,
-            reason: result.reason
+            amount: data.refundAmount || payment.amount,
+            reason: 'customer_cancellation' as const,
+            initiatedAt: new Date().toISOString()
           }
-        });
-      }
+        }
+      );
+
+      await prisma.processedEvent.create({
+        data: { eventId: refundEventId }
+      });
+
+      log.info('Order cancellation refund processed');
     }
   );
 

@@ -11,6 +11,9 @@
   "dependencies": {
     "@food/event-bus": "*",
     "@food/event-contracts": "*",
+    "@food/observability": "*",
+    "@food/idempotency": "*",
+    "@food/resilience": "*",
     "@opentelemetry/api": "^1.8.0",
     "@opentelemetry/auto-instrumentations-node": "^0.50.2",
     "@opentelemetry/exporter-trace-otlp-http": "^0.50.0",
