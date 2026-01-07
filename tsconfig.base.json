@@ -14,7 +14,7 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
   "exclude": ["node_modules", "dist"]
 }

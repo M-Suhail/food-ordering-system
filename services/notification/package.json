@@ -6,7 +6,9 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
-    "test": "jest --passWithNoTests"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@food/event-bus": "*",
@@ -27,8 +29,13 @@
       ,"swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
+    "@food/test-utils": "*",
     "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.0",
     "@types/node": "^20.11.30",
+    "jest": "^29.5.0",
+    "jest-extended": "^4.0.0",
+    "ts-jest": "^29.1.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }
