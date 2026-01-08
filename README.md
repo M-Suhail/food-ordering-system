@@ -23,23 +23,35 @@ Production-grade microservices system built with Express, TypeScript, RabbitMQ, 
 food-ordering-system/
 ├── .eslintrc.cjs
 ├── .prettierrc
+├── .dockerignore
 ├── jest.config.js
 ├── jest.integration.config.js
+├── package.json
+├── tsconfig.base.json
 ├── README.md
+│
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                    # Main CI/CD pipeline (lint, typecheck, test, docker)
+│   │   ├── security.yml              # Security scanning (deps, secrets, code quality)
+│   │   └── docker-build.yml          # Docker build & push to GHCR
+│   └── dependabot.yml                # Automated dependency updates
+│
 ├── infra/
-│   |── docker-compose.yml
-│   └── observability
+│   ├── docker-compose.yml
+│   ├── otel/
+│   │   └── otel-collector-config.yaml
+│   └── observability/
 │       ├── docker-compose.observability.yml
 │       ├── grafana/
-│       │   └── dashbaords/
+│       │   └── dashboards/
 │       │       ├── events.json
 │       │       ├── http-latency.json
 │       │       └── system-overview.json
 │       └── prometheus/
 │           ├── alerts.yml
 │           └── prometheus.yml
-├── package.json
-├── tsconfig.base.json
+│
 ├── packages/
 │   ├── event-bus/
 │   │   ├── package.json
@@ -63,8 +75,8 @@ food-ordering-system/
 │   │           ├── order-created.v1.ts
 │   │           ├── order-cancelled.v1.ts
 │   │           ├── payment-failed.v1.ts
-│   │           ├── payment-succeeded.v1.ts
 │   │           ├── payment-refund.v1.ts
+│   │           ├── payment-succeeded.v1.ts
 │   │           └── index.ts
 │   ├── idempotency/
 │   │   ├── package.json
@@ -81,19 +93,21 @@ food-ordering-system/
 │   │       ├── metrics.ts
 │   │       ├── trace.ts
 │   │       └── tracing.ts
-│   └── resilience/
-│       ├── package.json
-│       ├── tsconfig.json
-│       └── src/
-│           ├── index.ts
-│           └── dlq.ts
+│   ├── resilience/
+│   │   ├── package.json
+│   │   ├── tsconfig.json
+│   │   └── src/
+│   │       ├── index.ts
+│   │       └── dlq.ts
 │   └── test-utils/
 │       ├── package.json
 │       ├── tsconfig.json
 │       └── src/
 │           └── index.ts (50+ factory functions, mocks, and test utilities)
+│
 ├── scripts/
 │   └── new-service.js
+│
 ├── services/
 │   ├── auth/
 │   │   ├── .env
@@ -280,10 +294,14 @@ food-ordering-system/
 │   └── api-gateway/
 │       ├── .env
 │       ├── .env.example
+│       ├── Dockerfile
+│       ├── jest.config.js
 │       ├── package.json
 │       ├── tsconfig.json
 │       ├── README.md
 │       └── src/
+│           ├── __tests__/
+│           │   └── proxy.test.ts
 │           ├── app.ts
 │           ├── lib/
 │           │   ├── logger.ts
@@ -482,7 +500,60 @@ Coverage thresholds are enforced:
 - **Global**: 70% branches, 75% functions, 80% lines/statements
 - **Critical Services**: 80% branches, 85% functions, 85% lines/statements
 
+## Troubleshooting
 
+### Tests Failing
+
+**Problem:** Tests fail with "Cannot find module" errors
+
+**Solution:** Ensure dependencies are installed and packages are built:
+```bash
+npm run bootstrap
+npx tsc -b --force
+npm test
+```
+
+**Problem:** Tests hang or don't exit
+
+**Solution:** Most likely a mock is keeping a handle open. Ensure all mocks are properly reset:
+```bash
+# Add to your test beforeEach
+jest.resetAllMocks();  // Reset mock state
+```
+
+### Build Errors
+
+**Problem:** "Property does not exist on type" errors in Prisma-using services
+
+**Solution:** Regenerate Prisma client:
+```bash
+cd services/order  # or other service
+npx prisma generate
+```
+
+**Problem:** TypeScript compilation fails across workspaces
+
+**Solution:** Use composite build mode:
+```bash
+npx tsc -b --force  # Force rebuild all projects
+```
+
+### Jest Configuration
+
+**Problem:** Global jest config in root doesn't run tests
+
+**Solution:** Use per-service `jest.config.js` with explicit paths. The root config references all service configs via the services folder glob.
+
+### Module Resolution
+
+**Problem:** "@food/..." imports not resolving
+
+**Solution:** Ensure `moduleNameMapper` is set in service's `jest.config.js`:
+```javascript
+moduleNameMapper: {
+  '^@food/(.*)$': '<rootDir>/../../packages/$1'
+}
+```
 
 ### Phase 0: Foundation ✅
 - [x] Monorepo initialized using npm workspaces
@@ -669,63 +740,6 @@ Coverage thresholds are enforced:
 - [x] Enforced RBAC centrally at the API Gateway
 - [x] Kept downstream services authorization-agnostic
 
-## Troubleshooting
-
-### Tests Failing
-
-**Problem:** Tests fail with "Cannot find module" errors
-
-**Solution:** Ensure dependencies are installed and packages are built:
-```bash
-npm run bootstrap
-npx tsc -b --force
-npm test
-```
-
-**Problem:** Tests hang or don't exit
-
-**Solution:** Most likely a mock is keeping a handle open. Ensure all mocks are properly reset:
-```bash
-# Add to your test beforeEach
-jest.resetAllMocks();  // Reset mock state
-```
-
-### Build Errors
-
-**Problem:** "Property does not exist on type" errors in Prisma-using services
-
-**Solution:** Regenerate Prisma client:
-```bash
-cd services/order  # or other service
-npx prisma generate
-```
-
-**Problem:** TypeScript compilation fails across workspaces
-
-**Solution:** Use composite build mode:
-```bash
-npx tsc -b --force  # Force rebuild all projects
-```
-
-### Jest Configuration
-
-**Problem:** Global jest config in root doesn't run tests
-
-**Solution:** Use per-service `jest.config.js` with explicit paths. The root config references all service configs via the services folder glob.
-
-### Module Resolution
-
-**Problem:** "@food/..." imports not resolving
-
-**Solution:** Ensure `moduleNameMapper` is set in service's `jest.config.js`:
-```javascript
-moduleNameMapper: {
-  '^@food/(.*)$': '<rootDir>/../../packages/$1'
-}
-```
-
-
-
 ### Phase 7.3: Authorization Hardening & API Contracts ✅
 - [x] Enforced fine-grained role-based access control at API Gateway
 - [x] Distinguished USER and ADMIN access at route level
@@ -801,6 +815,30 @@ moduleNameMapper: {
 - [x] **Coverage Enforcement**: CI/CD integration with threshold validation
 - [x] **Total Test Coverage**: 92 tests ensuring 80%+ coverage globally, 85%+ on critical services
 
+### Phase 11: GitHub Actions CI/CD Pipeline ✅
+- [x] **CI/CD Workflows**:
+  - Main CI pipeline (linting, type-checking, testing with coverage)
+  - Security scanning (dependency audit, secret detection, code quality)
+  - Docker build & push pipeline with Trivy vulnerability scanning
+  - Matrix-based parallel builds for multiple services
+- [x] **Testing in CI**:
+  - PostgreSQL, MongoDB, RabbitMQ services started automatically
+  - Coverage reporting with Codecov integration
+  - Coverage threshold enforcement (80% lines, 75% functions, 70% branches)
+  - Integration tests included in CI pipeline
+- [x] **Docker Registry Integration**:
+  - Images pushed to GitHub Container Registry (GHCR)
+  - Automatic tagging (branch, semver, SHA)
+  - Layer caching for faster builds
+  - Trivy vulnerability scanning on built images
+- [x] **npm Scripts**: test:ci, test:integration added for CI/CD
+- [x] **CI/CD Documentation**: Comprehensive guide in docs/CI_CD.md
+- [x] **Benefits**: 
+  - No broken code on main branch
+  - Automated security scanning
+  - Ready for Kubernetes deployment (Phase 12)
+  - Code quality enforcement
+
 ## Observability Dashboards
 
 - **Prometheus (metrics explorer):**  
@@ -812,6 +850,33 @@ moduleNameMapper: {
 
 You can use Prometheus to query raw metrics and Grafana to view pre-built dashboards for system health, HTTP traffic, and events.
 If you have custom dashboards or alerts, mention their location or import instructions here.
+
+## CI/CD Pipeline
+
+All changes are automatically tested via GitHub Actions:
+
+- **CI/CD Pipeline** (`.github/workflows/ci.yml`): Linting, type-checking, testing on every push and PR
+- **Security Scanning** (`.github/workflows/security.yml`): Dependency audits, secret detection, code quality checks
+- **Docker Build** (`.github/workflows/docker-build.yml`): Builds and pushes images to GitHub Container Registry (GHCR)
+
+### Running Checks Locally
+
+Before pushing, run the same checks that CI/CD runs:
+
+```bash
+npm run bootstrap       # Install dependencies
+npm run lint          # ESLint check
+npm run typecheck     # TypeScript check
+npm test              # Run all tests
+npm run test:coverage # View coverage report
+```
+
+### View CI/CD Results
+
+- **GitHub Actions**: Repository → Actions tab
+- **Docker Images**: Repository → Packages tab (after pushing to main)
+- **Security Alerts**: Repository → Security tab
+- **Coverage Reports**: Codecov.io integration
 
 ## Environment Variables
 

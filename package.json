@@ -13,6 +13,8 @@
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --passWithNoTests",
+    "test:ci": "jest --ci --passWithNoTests --maxWorkers=2",
+    "test:integration": "jest --config jest.integration.config.js",
     "new:service": "node ./scripts/new-service.js",
     "dev:auth": "cd services/auth && npm install && npm run dev",
     "dev:order": "cd services/order && npm install && npm run dev",
