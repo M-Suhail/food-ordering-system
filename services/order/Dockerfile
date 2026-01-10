@@ -6,7 +6,7 @@ COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY services/order ./services/order
 RUN npm ci --workspaces
-RUN npx tsc --project ./services/order/tsconfig.json --skipLibCheck 2>&1 || true
+RUN npx tsc --project ./services/order/tsconfig.json --skipLibCheck --outDir ./services/order/dist 2>&1 || true
 
 FROM node:20-alpine
 WORKDIR /app

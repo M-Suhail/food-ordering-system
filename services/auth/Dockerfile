@@ -6,7 +6,7 @@ COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY services/auth ./services/auth
 RUN npm ci --workspaces
-RUN npx tsc --project ./services/auth/tsconfig.json --skipLibCheck 2>&1 || true
+RUN npx tsc --project ./services/auth/tsconfig.json --skipLibCheck --outDir ./services/auth/dist 2>&1 || true
 
 FROM node:20-alpine
 WORKDIR /app

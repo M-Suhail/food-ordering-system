@@ -6,7 +6,7 @@ COPY tsconfig.base.json ./
 COPY packages ./packages
 COPY services/api-gateway ./services/api-gateway
 RUN npm ci --workspaces
-RUN npx tsc --project ./services/api-gateway/tsconfig.json --skipLibCheck 2>&1 || true
+RUN npx tsc --project ./services/api-gateway/tsconfig.json --skipLibCheck --outDir ./services/api-gateway/dist 2>&1 || true
 
 FROM node:20-alpine
 WORKDIR /app

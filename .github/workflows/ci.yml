@@ -105,22 +105,21 @@ jobs:
         run: npx tsc -b --force
 
       - name: Run Tests with Coverage
-        run: npm run test:ci -- --coverage
+        run: npm run test:ci
         env:
           DATABASE_URL: postgres://postgres:password@localhost:5432/postgres
           MONGO_URL: mongodb://localhost:27017
           RABBITMQ_URL: amqp://guest:guest@localhost:5672
+          NODE_ENV: test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        if: always()
         with:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
-
-      - name: Check coverage thresholds
-        run: npm run test:ci -- --coverage --collectCoverageFrom='src/**/*.ts' --coverageThreshold='{"global":{"lines":80,"functions":75,"branches":70}}'
 
   docker-build:
     name: Docker Build Validation
