@@ -135,9 +135,9 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t food-ordering/auth:${{ github.sha }} ./services/auth
-          docker build -t food-ordering/order:${{ github.sha }} ./services/order
-          docker build -t food-ordering/api-gateway:${{ github.sha }} ./services/api-gateway
+          docker build -t food-ordering/auth:${{ github.sha }} -f ./services/auth/Dockerfile .
+          docker build -t food-ordering/order:${{ github.sha }} -f ./services/order/Dockerfile .
+          docker build -t food-ordering/api-gateway:${{ github.sha }} -f ./services/api-gateway/Dockerfile .
 
       - name: Run Docker image security scan
         run: |
