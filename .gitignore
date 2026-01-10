@@ -1,65 +1,122 @@
+# ============================================================================
 # Dependencies
+# ============================================================================
 node_modules/
 package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Build output
+# ============================================================================
+# Build Output
+# ============================================================================
 dist/
 build/
 *.tsbuildinfo
+*.tsbuildinfo.json
+tsconfig.tsbuildinfo
 
-# Environment variables
+# ============================================================================
+# Environment Variables
+# ============================================================================
 .env
 .env.local
 .env.*.local
+.env.production.local
 !.env.example
+!.env.example.local
 
-# Prisma
+# ============================================================================
+# Database
+# ============================================================================
 prisma/dev.db
 prisma/dev.db-journal
-# Service-specific Prisma generated clients (monorepo pattern)
 services/*/prisma/generated/
 packages/*/prisma/generated/
+*.sqlite
+*.sqlite3
 
+# ============================================================================
 # Logs
+# ============================================================================
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 
-# Test coverage
+# ============================================================================
+# Test Coverage & Reports
+# ============================================================================
 coverage/
 .nyc_output/
+.coverage
+*.lcov
+test-results/
+junit.xml
 
-# OS / Editor
+# ============================================================================
+# OS-specific Files
+# ============================================================================
 .DS_Store
 .AppleDouble
 .LSOverride
-.vscode/
-.idea/
+Thumbs.db
 *.swp
 *.swo
 *~
-*.sublime-workspace
-*.sublime-project
 
-# Docker
+# ============================================================================
+# IDE & Editor
+# ============================================================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+.idea/
+.sublime-workspace
+.sublime-project
+.fleet/
+.vs/
+*.code-workspace
+
+# ============================================================================
+# Docker & Container
+# ============================================================================
 docker-data/
+.dockerignore
 *.pid
+.docker/
 
-# Temporary files
+# ============================================================================
+# Temporary & Cache Files
+# ============================================================================
 tmp/
 temp/
-
-# IDE
-.vs/
-.fleet/
-
-# Node
+.cache/
 .npm/
-
-# npm workspaces cache
 .npmrc
+.node-gyp/
+
+# ============================================================================
+# OS Caches
+# ============================================================================
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# ============================================================================
+# Project-specific
+# ============================================================================
+# Ignore compiled output from services
+services/*/dist/
+services/*/build/
+packages/*/dist/
+packages/*/build/
+
+# Ignore generated Prisma clients
+.env.local
+.pem
 
 

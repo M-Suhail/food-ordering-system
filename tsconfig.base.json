@@ -11,10 +11,18 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "incremental": true,
-    "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "baseUrl": ".",
+    "paths": {
+      "@food/event-bus": ["packages/event-bus/src"],
+      "@food/event-contracts": ["packages/event-contracts/src"],
+      "@food/idempotency": ["packages/idempotency/src"],
+      "@food/observability": ["packages/observability/src"],
+      "@food/resilience": ["packages/resilience/src"],
+      "@food/test-utils": ["packages/test-utils/src"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }

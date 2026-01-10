@@ -10,9 +10,4 @@ coverage
 dist
 *.test.ts
 jest.config.js
-tsconfig.json
-.eslintrc.cjs
-.prettierrc
-infra
-docs
-.github
+

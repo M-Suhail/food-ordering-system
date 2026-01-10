@@ -1,20 +1,15 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": [],
-  "references": [
-    { "path": "./packages/event-bus" },
-    { "path": "./packages/event-contracts" },
-    { "path": "./packages/idempotency" },
-    { "path": "./packages/observability" },
-    { "path": "./packages/resilience" },
-    { "path": "./packages/test-utils" },
-    { "path": "./services/api-gateway" },
-    { "path": "./services/auth" },
-    { "path": "./services/delivery" },
-    { "path": "./services/kitchen" },
-    { "path": "./services/notification" },
-    { "path": "./services/order" },
-    { "path": "./services/payment" },
-    { "path": "./services/restaurant" }
+  "compilerOptions": {
+    "skipLibCheck": true
+  },
+  "include": [
+    "packages/**/*",
+    "services/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/node_modules",
+    "**/dist"
   ]
 }
