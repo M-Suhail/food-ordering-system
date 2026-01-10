@@ -9,8 +9,7 @@ import {
   OrderCreatedV1Schema,
   type OrderCreatedV1
 } from '@food/event-contracts';
-import { logger } from './lib/logger';
-import { metricsMiddleware } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -22,7 +21,6 @@ export async function createServer() {
     OrderCreatedV1Schema,
     async (data, envelope) => {
       const { traceId } = envelope;
-      const log = logger.child({ traceId });
 
       // Idempotency
       const processed = await prisma.processedEvent.findUnique({
@@ -75,7 +73,6 @@ export async function createServer() {
     app.use(routes);
     // Swagger docs
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    const { register } = require('@food/observability');
     app.use(metricsMiddleware(process.env.SERVICE_NAME || 'kitchen-service'));
     app.get('/metrics', async (_req, res) => {
       res.set('Content-Type', register.contentType);

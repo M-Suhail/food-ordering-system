@@ -11,7 +11,7 @@ import { registerPaymentSucceededConsumer } from './consumers/paymentSucceeded.c
 import { registerPaymentFailedConsumer } from './consumers/paymentFailed.consumer';
 import { registerDeliveryAssignedConsumer } from './consumers/deliveryAssigned.consumer';
 
-import { metricsMiddleware } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export async function createServer() {
   await initMongo();
@@ -31,7 +31,6 @@ export async function createServer() {
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'notification-service'));
     // Swagger docs
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());

@@ -9,7 +9,7 @@ export function authorize(requiredRole?: string) {
     const token = header.replace('Bearer ', '');
 
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
+      const payload = jwt.verify(token, process.env.JWT_SECRET!) as { role?: string; sub?: string };
       req.user = payload;
 
       if (requiredRole && payload.role !== requiredRole) {

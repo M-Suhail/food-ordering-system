@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+*.d.ts
+.next/
+coverage/
+.tsc*.tsbuildinfo
+**/__tests__/**
+**/*.test.ts
+**/*.spec.ts

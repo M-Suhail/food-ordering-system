@@ -16,6 +16,9 @@ build/
 # Prisma
 prisma/dev.db
 prisma/dev.db-journal
+# Service-specific Prisma generated clients (monorepo pattern)
+services/*/prisma/generated/
+packages/*/prisma/generated/
 
 # Logs
 logs/

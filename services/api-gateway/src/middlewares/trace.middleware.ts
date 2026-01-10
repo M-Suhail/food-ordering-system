@@ -6,9 +6,9 @@ export function traceMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  const traceId = getOrCreateTraceId(req.headers[TRACE_HEADER]);
+  const traceId = getOrCreateTraceId(req.headers[TRACE_HEADER] as string | undefined);
   req.headers[TRACE_HEADER] = traceId;
   res.setHeader(TRACE_HEADER, traceId);
-  (req as any).traceId = traceId;
+  (req as Request & { traceId: string }).traceId = traceId;
   next();
 }

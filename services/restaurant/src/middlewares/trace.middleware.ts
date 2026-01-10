@@ -9,6 +9,6 @@ export function traceMiddleware(
   const traceId = getOrCreateTraceId(req.headers[TRACE_HEADER]);
   req.headers[TRACE_HEADER] = traceId;
   res.setHeader(TRACE_HEADER, traceId);
-  (req as any).traceId = traceId;
+  (req as Request & { traceId?: string }).traceId = traceId;
   next();
 }

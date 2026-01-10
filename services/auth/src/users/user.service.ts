@@ -11,7 +11,7 @@ export async function createUser(input: CreateUserInput) {
     data: {
       email: input.email,
       passwordHash,
-      role: input.role ?? 'user'
+      role: (input.role ?? 'USER') as 'USER' | 'ADMIN'
     }
   });
 }

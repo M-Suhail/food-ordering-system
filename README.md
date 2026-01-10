@@ -342,6 +342,28 @@ npx tsc -b services/order
 
 Each package and service has its own `tsconfig.json` that references the root `tsconfig.base.json` for shared configurations.
 
+**Prisma Monorepo Pattern:**
+
+Each service with a Prisma schema generates its own client to avoid type conflicts in the monorepo:
+
+```
+services/
+├── auth/prisma/
+│   ├── schema.prisma       # Auth schema
+│   └── generated/auth/     # Generated auth client (auto-generated, not in git)
+├── kitchen/prisma/
+│   ├── schema.prisma       # Kitchen schema
+│   └── generated/kitchen/  # Generated kitchen client
+├── payment/prisma/
+│   ├── schema.prisma       # Payment schema
+│   └── generated/payment/  # Generated payment client
+└── restaurant/prisma/
+    ├── schema.prisma       # Restaurant schema
+    └── generated/restaurant/ # Generated restaurant client
+```
+
+Generated directories are created automatically during build and excluded from git (see `.gitignore`). This prevents type conflicts and ensures each service only has access to its own database models.
+
 ### Running Infrastructure
 
 Start the local infrastructure (RabbitMQ, PostgreSQL):

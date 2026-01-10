@@ -1,5 +1,5 @@
 import { Channel } from 'amqplib';
-import { trace, context, SpanKind } from '@opentelemetry/api';
+import { trace, SpanKind } from '@opentelemetry/api';
 import { EventEnvelope } from '@food/event-contracts';
 
 const EVENTS_EXCHANGE = 'events';

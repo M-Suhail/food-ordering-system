@@ -13,7 +13,7 @@ import {
   type DeliveryAssignedV1
 } from '@food/event-contracts';
 
-import { metricsMiddleware } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -106,7 +106,6 @@ export async function createServer() {
     // Swagger docs
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'order-service'));
-  const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());

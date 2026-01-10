@@ -1,9 +1,7 @@
 import { prisma as _prisma } from '../../src/lib/db';
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
 import {
-  createOrderFactory,
   expectError,
   expectAsyncError
 } from '@food/test-utils';

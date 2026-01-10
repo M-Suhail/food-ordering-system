@@ -1,20 +1,18 @@
 import { consumeEvent } from '@food/event-bus';
+import { Channel } from 'amqplib';
 import {
   OrderCreatedV1Schema,
   type OrderCreatedV1
 } from '@food/event-contracts';
 import { getDb } from '../lib/mongo';
 import { sendNotification } from '../notifications/sendNotification';
-import { logger } from '../lib/logger';
 
-export async function registerOrderCreatedConsumer(channel: any) {
+export async function registerOrderCreatedConsumer(channel: Channel) {
   await consumeEvent<OrderCreatedV1>(
     channel,
     'notification.order_created',
     OrderCreatedV1Schema,
-    async (data, envelope) => {
-      const { traceId } = envelope;
-      const log = logger.child({ traceId });
+    async (data) => {
       
       const db = getDb();
       const eventKey = `order_created_${data.orderId}`;

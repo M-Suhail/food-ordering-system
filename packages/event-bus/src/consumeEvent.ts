@@ -1,6 +1,6 @@
 import { Channel, ConsumeMessage } from 'amqplib';
 import { ZodSchema } from 'zod';
-import { trace, context, SpanKind } from '@opentelemetry/api';
+import { trace, SpanKind } from '@opentelemetry/api';
 import { EventEnvelope } from '@food/event-contracts';
 
 const tracer = trace.getTracer('event-bus');

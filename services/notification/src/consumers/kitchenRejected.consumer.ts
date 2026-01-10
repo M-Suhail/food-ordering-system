@@ -1,20 +1,18 @@
 import { consumeEvent } from '@food/event-bus';
+import { Channel } from 'amqplib';
 import {
   KitchenRejectedV1Schema,
   type KitchenRejectedV1
 } from '@food/event-contracts';
 import { getDb } from '../lib/mongo';
 import { sendNotification } from '../notifications/sendNotification';
-import { logger } from '../lib/logger';
 
-export async function registerKitchenRejectedConsumer(channel: any) {
+export async function registerKitchenRejectedConsumer(channel: Channel) {
   await consumeEvent<KitchenRejectedV1>(
     channel,
     'notification.kitchen_rejected',
     KitchenRejectedV1Schema,
-    async (data, envelope) => {
-      const { traceId } = envelope;
-      const log = logger.child({ traceId });
+    async (data) => {
 
       const db = getDb();
       const eventKey = `kitchen_rejected_${data.orderId}`;

@@ -9,11 +9,10 @@ import { logger } from './lib/logger';
 import {
   KitchenAcceptedV1Schema,
   type KitchenAcceptedV1,
-  PaymentRefundV1,
   OrderCancelledV1Schema,
   type OrderCancelledV1
 } from '@food/event-contracts';
-import { metricsMiddleware } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -154,7 +153,7 @@ export async function createServer() {
 
       // Mark payment as refunded
       await prisma.payment.update({
-        where: { id: payment.id },
+        where: { orderId: payment.orderId },
         data: {
           status: 'REFUNDED',
           reason: `Refunded due to: ${data.reason}`
@@ -173,7 +172,7 @@ export async function createServer() {
           producer: 'payment-service',
           traceId,
           data: {
-            paymentId: payment.id,
+            paymentId: payment.orderId,
             orderId: data.orderId,
             amount: data.refundAmount || payment.amount,
             reason: 'customer_cancellation' as const,
@@ -195,7 +194,7 @@ export async function createServer() {
     // Swagger docs
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'payment-service'));
-  const { register } = require('@food/observability');
+
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());

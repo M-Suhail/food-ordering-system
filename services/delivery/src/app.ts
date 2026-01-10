@@ -5,7 +5,6 @@ import { swaggerSpec, swaggerUi } from './swagger';
 import { initRabbitMQ, getChannel } from './lib/rabbitmq';
 import { connectMongo } from './lib/mongo';
 import { assignDriver } from './assign/assignDriver';
-import { logger } from './lib/logger';
 
 import { consumeEvent, publishEvent } from '@food/event-bus';
 import {
@@ -13,7 +12,7 @@ import {
   type PaymentSucceededV1
 } from '@food/event-contracts';
 
-import { metricsMiddleware } from '@food/observability';
+import { metricsMiddleware, register } from '@food/observability';
 
 export async function createServer() {
   await initRabbitMQ();
@@ -29,7 +28,6 @@ export async function createServer() {
     PaymentSucceededV1Schema,
     async (data, envelope) => {
       const { traceId } = envelope;
-      const log = logger.child({ traceId });
 
       const processed = await processedEvents.findOne({
         eventId: data.orderId
@@ -37,7 +35,7 @@ export async function createServer() {
 
       if (processed) return;
 
-      const driverId = assignDriver(data.orderId);
+      const driverId = assignDriver();
 
       await deliveries.insertOne({
         orderId: data.orderId,
@@ -71,7 +69,6 @@ export async function createServer() {
     app.use(routes);
     // Swagger docs
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  const { register } = require('@food/observability');
   app.get('/metrics', async (_req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());

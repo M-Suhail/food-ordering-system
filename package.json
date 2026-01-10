@@ -23,7 +23,8 @@
     "dev:payment": "cd services/payment && npm install && npm run dev",
     "dev:delivery": "cd services/delivery && npm install && npm run dev",
     "dev:notification": "cd services/notification && npm install && npm run dev",
-    "dev:api-gateway": "cd services/api-gateway && npm install && npm run dev"
+    "dev:api-gateway": "cd services/api-gateway && npm install && npm run dev",
+    "prisma": "echo 'Prisma clients are auto-generated on npm install via postinstall hooks'"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.8",
@@ -46,6 +47,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",
-    "bcrypt": "^6.0.0"
+    "bcrypt": "^6.0.0",
+    "express-rate-limit": "^8.2.1",
+    "http-proxy-middleware": "^3.0.5"
   }
 }

@@ -21,7 +21,7 @@ export function createServer() {
   app.use(metricsMiddleware(process.env.SERVICE_NAME || 'api-gateway'));
 
   app.use(express.json());
-  app.use(apiRateLimit as any);
+  app.use(apiRateLimit);
   app.use(traceMiddleware);
 
   /* =======================

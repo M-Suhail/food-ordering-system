@@ -1,20 +1,18 @@
 import { consumeEvent } from '@food/event-bus';
+import { Channel } from 'amqplib';
 import {
   PaymentSucceededV1Schema,
   type PaymentSucceededV1
 } from '@food/event-contracts';
 import { getDb } from '../lib/mongo';
 import { sendNotification } from '../notifications/sendNotification';
-import { logger } from '../lib/logger';
 
-export async function registerPaymentSucceededConsumer(channel: any) {
+export async function registerPaymentSucceededConsumer(channel: Channel) {
   await consumeEvent<PaymentSucceededV1>(
     channel,
     'notification.payment_succeeded',
     PaymentSucceededV1Schema,
-    async (data, envelope) => {
-      const { traceId } = envelope;
-      const log = logger.child({ traceId });
+    async (data) => {
       
       const db = getDb();
       const eventKey = `payment_succeeded_${data.orderId}`;

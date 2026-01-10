@@ -3,9 +3,6 @@ import { health } from './controllers/healthController';
 import { cancelOrder } from './controllers/cancelOrder';
 import { subscribeOrderCreated } from './events/subscribeOrderCreated';
 
-import { getChannel } from './lib/rabbitmq';
-import { publishEvent } from '@food/event-bus';
-
 const router = Router();
 
 /**
