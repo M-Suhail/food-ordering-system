@@ -17,7 +17,7 @@
     "@food/resilience": "*",
     "@food/test-utils": "*",
     "@opentelemetry/api": "^1.8.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.50.2",
+    "@opentelemetry/auto-instrumentations-node": "^0.67.3",
     "@opentelemetry/exporter-trace-otlp-http": "^0.50.0",
     "@opentelemetry/sdk-node": "^0.50.0",
     "amqplib": "^0.10.0",
