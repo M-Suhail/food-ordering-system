@@ -119,4 +119,59 @@ packages/*/build/
 .env.local
 .pem
 
+# ============================================================================
+# Kubernetes & Helm
+# ============================================================================
+# Helm chart dependencies
+k8s/charts/*/charts/
+k8s/charts/*/*.lock
+
+# Helm cache and local files
+.helm/
+*.tgz
+*.tar.gz
+
+# Kubernetes kubeconfig files
+kubeconfig
+kubeconfig.yaml
+.kube/
+.kubeconfig
+
+# Generated Kubernetes manifests (if created locally)
+k8s/manifests/generated/
+k8s/**/generated-manifests.yaml
+
+# Helm values with secrets (use sealed-secrets instead)
+k8s/**/values-prod.yaml
+k8s/**/values-production.yaml
+k8s/**/secrets-*.yaml
+
+# Kubernetes temporary files
+k8s/**/*.backup
+k8s/**/*.bak
+
+# Helm plugin files
+plugins.yaml
+
+# ArgoCD / GitOps
+argocd/
+flux/
+.argocd-sync/
+
+# Local kubectl port-forward PIDs
+kubectl-port-forward.pid
+port-forward.pid
+
+# Kustomize overlays cache
+k8s/**/kustomization.lock.yaml
+
+# Istio / Service mesh
+istio/
+istio-*.yaml
+
+# YAML temp files
+*.yaml.bak
+*.yaml.tmp
+*.yml.bak
+*.yml.tmp
 

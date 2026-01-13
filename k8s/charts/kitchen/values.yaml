@@ -1,0 +1,25 @@
+replicaCount: 2
+image:
+  repository: ghcr.io/your-org/food-ordering-system/kitchen
+  pullPolicy: IfNotPresent
+  tag: "latest"
+service:
+  type: ClusterIP
+  port: 3004
+  targetPort: 3004
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+envFrom:
+  - configMapRef:
+      name: kitchen-config
+  - secretRef:
+      name: kitchen-secrets

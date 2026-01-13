@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: restaurant-config
+  namespace: food-ordering
+data:
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/restaurant_db"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: restaurant-secrets
+  namespace: food-ordering
+type: Opaque
+stringData:
+  PLACEHOLDER: "value"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kitchen-config
+  namespace: food-ordering
+data:
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/kitchen_db"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kitchen-secrets
+  namespace: food-ordering
+type: Opaque
+stringData:
+  PLACEHOLDER: "value"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-config
+  namespace: food-ordering
+data:
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/payment_db"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: payment-secrets
+  namespace: food-ordering
+type: Opaque
+stringData:
+  PLACEHOLDER: "value"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: delivery-config
+  namespace: food-ordering
+data:
+  MONGO_URL: "mongodb://root:password@mongodb:27017/delivery_db?authSource=admin"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: delivery-secrets
+  namespace: food-ordering
+type: Opaque
+stringData:
+  PLACEHOLDER: "value"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-config
+  namespace: food-ordering
+data:
+  MONGO_URL: "mongodb://root:password@mongodb:27017/notification_db?authSource=admin"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notification-secrets
+  namespace: food-ordering
+type: Opaque
+stringData:
+  PLACEHOLDER: "value"

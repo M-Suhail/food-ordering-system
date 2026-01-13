@@ -30,6 +30,30 @@ food-ordering-system/
 ├── tsconfig.base.json
 ├── README.md
 │
+├── k8s/                                 # Kubernetes deployment (Phase 12)
+│   ├── charts/                          # Helm charts for 8 services
+│   │   ├── api-gateway/
+│   │   ├── auth/
+│   │   ├── order/
+│   │   ├── restaurant/
+│   │   ├── kitchen/
+│   │   ├── payment/
+│   │   ├── delivery/
+│   │   └── notification/
+│   ├── manifests/                       # Kubernetes manifests
+│   │   ├── namespace.yaml
+│   │   ├── rbac.yaml
+│   │   ├── configmaps.yaml
+│   │   ├── secrets.yaml
+│   │   ├── ingress.yaml
+│   │   ├── databases/
+│   │   │   ├── postgres.yaml            # PostgreSQL StatefulSet (20Gi)
+│   │   │   └── mongodb.yaml             # MongoDB StatefulSet (20Gi)
+│   │   └── infrastructure/
+│   │       ├── rabbitmq.yaml            # RabbitMQ Deployment
+│   │       └── otel-collector.yaml      # OpenTelemetry Collector
+│   └── deploy.sh                        # One-command deployment script
+│
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml                    # Main CI/CD pipeline (lint, typecheck, test, docker)
@@ -861,6 +885,64 @@ moduleNameMapper: {
   - Ready for Kubernetes deployment (Phase 12)
   - Code quality enforcement
 
+### Phase 12: Kubernetes Deployment & Orchestration ✅
+- [x] **Helm Charts**: 8 production-ready Helm charts (api-gateway, auth, order, restaurant, kitchen, payment, delivery, notification)
+  - Deployment templates with rolling updates (zero-downtime)
+  - Horizontal Pod Autoscaling (HPA: 2-5 replicas, 70% CPU threshold)
+  - Liveness and readiness probes for health checks
+  - Resource requests and limits (CPU/memory)
+  - Service definitions for internal communication
+- [x] **Persistent Storage**:
+  - PostgreSQL StatefulSet with 20Gi PersistentVolumeClaim (auth, order, kitchen, payment, restaurant)
+  - MongoDB StatefulSet with 20Gi PersistentVolumeClaim (delivery, notification)
+  - Automated database initialization via ConfigMaps
+  - Data persistence across pod restarts
+- [x] **Infrastructure Components**:
+  - RabbitMQ Deployment for event-driven messaging (AMQP + management UI)
+  - OpenTelemetry Collector for distributed tracing (OTLP protocol)
+  - Kubernetes Namespace (food-ordering) for resource isolation
+  - Ingress Controller (NGINX) with TLS/HTTPS support via cert-manager
+- [x] **Configuration Management**:
+  - Service-specific ConfigMaps (database URLs, RabbitMQ endpoints, OTEL collector)
+  - Kubernetes Secrets for JWT tokens, API keys, credentials
+  - Environment variable injection into pods
+  - Centralized configuration without image rebuilds
+- [x] **Security & Access Control**:
+  - RBAC (Role-Based Access Control) with service accounts and roles
+  - Network Policies for inter-service communication isolation
+  - Security Contexts (non-root containers, read-only filesystems)
+  - Pod security standards compliance
+- [x] **High Availability**:
+  - Multi-replica deployments (minimum 2 per service)
+  - Horizontal Pod Autoscaling based on CPU/memory metrics
+  - Rolling update strategy (maxSurge=1, maxUnavailable=0)
+  - Pod anti-affinity to spread replicas across nodes
+  - Automatic restart on pod failure
+- [x] **Health Checks**:
+  - Liveness probes: /health endpoint (30s initial delay, 10s period, 3 failures threshold)
+  - Readiness probes: /ready endpoint (10s initial delay, 5s period, 2 failures threshold)
+  - Ensures traffic only routed to healthy pods
+  - Automatic recovery on failures
+- [x] **Documentation**:
+  - docs/KUBERNETES_DEPLOYMENT.md (450+ lines) - Complete deployment guide
+  - docs/K8S_QUICK_REFERENCE.md - Essential kubectl commands and debugging
+  - docs/PHASE_12_SUMMARY.md - Architecture overview and feature breakdown
+  - PHASE_12_README.md - Quick start guide
+- [x] **Automation & Tooling**:
+  - k8s/deploy.sh - One-command deployment script
+  - Automated infrastructure readiness checks
+  - Helm install/upgrade for all services
+  - Port-forwarding examples for local access
+- [x] **Kubernetes Features**:
+  - StatefulSets for ordered, unique pod identities (databases)
+  - Deployments for stateless services with scaling
+  - Services for internal load balancing
+  - ConfigMaps and Secrets for configuration
+  - PersistentVolumes and PersistentVolumeClaims for data
+  - HorizontalPodAutoscalers for automatic scaling
+  - NetworkPolicies for security
+  - ServiceAccounts and RBAC for access control
+
 ## Observability Dashboards
 
 - **Prometheus (metrics explorer):**  
@@ -872,6 +954,51 @@ moduleNameMapper: {
 
 You can use Prometheus to query raw metrics and Grafana to view pre-built dashboards for system health, HTTP traffic, and events.
 If you have custom dashboards or alerts, mention their location or import instructions here.
+
+## Kubernetes Deployment
+
+The system is production-ready for Kubernetes with comprehensive Helm charts and manifests.
+
+### Quick Start
+
+```bash
+# Deploy to Kubernetes
+cd k8s
+bash deploy.sh
+
+# Or manually with kubectl and Helm
+kubectl apply -f manifests/namespace.yaml
+kubectl apply -f manifests/rbac.yaml
+kubectl apply -f manifests/databases/
+kubectl apply -f manifests/infrastructure/
+
+for service in api-gateway auth order restaurant kitchen payment delivery notification; do
+  helm install $service charts/$service -n food-ordering
+done
+```
+
+### Key Features
+
+- **8 Helm Charts**: One for each microservice with production-ready templates
+- **Persistent Storage**: PostgreSQL (20Gi) and MongoDB (20Gi) StatefulSets
+- **Message Queue**: RabbitMQ for event-driven architecture
+- **Observability**: OpenTelemetry Collector for distributed tracing
+- **High Availability**: 2-5 replicas per service with HPA based on CPU metrics
+- **Security**: RBAC, network policies, non-root containers
+- **Zero-Downtime Updates**: Rolling deployment strategy
+- **Configuration Management**: ConfigMaps and Secrets for flexible deployments
+
+### Documentation
+
+See [docs/KUBERNETES_DEPLOYMENT.md](docs/KUBERNETES_DEPLOYMENT.md) for:
+- Detailed deployment instructions for all cluster types (Minikube, EKS, GKE, AKS)
+- Port forwarding and local development setup
+- Scaling and rolling updates
+- Backup and disaster recovery procedures
+- Troubleshooting guide
+- Production checklist
+
+Quick reference: [docs/K8S_QUICK_REFERENCE.md](docs/K8S_QUICK_REFERENCE.md)
 
 ## CI/CD Pipeline
 

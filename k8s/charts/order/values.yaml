@@ -1,0 +1,32 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/your-org/food-ordering-system/order
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 3002
+  targetPort: 3002
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+envFrom:
+  - configMapRef:
+      name: order-config
+  - secretRef:
+      name: order-secrets

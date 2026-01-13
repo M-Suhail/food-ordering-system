@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+  namespace: food-ordering
+data:
+  DATABASE_URL: "postgres://postgres:postgres@postgres:5432/auth_db"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318/v1/traces"
+  OTEL_TRACES_EXPORTER: "otlp"
