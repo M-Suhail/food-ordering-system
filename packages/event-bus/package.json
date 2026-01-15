@@ -11,6 +11,6 @@
     "@food/event-contracts": "*",
     "@opentelemetry/api": "^1.8.0",
     "amqplib": "^0.10.4",
-    "zod": "^3.23.0"
+    "zod": "^4.3.5"
   }
 }
