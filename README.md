@@ -29,9 +29,8 @@ food-ordering-system/
 ├── package.json
 ├── tsconfig.base.json
 ├── README.md
-│
-├── k8s/                                 # Kubernetes deployment (Phase 12)
-│   ├── charts/                          # Helm charts for 8 services
+├── k8s/                                
+│   ├── charts/                          
 │   │   ├── api-gateway/
 │   │   ├── auth/
 │   │   ├── order/
@@ -40,26 +39,25 @@ food-ordering-system/
 │   │   ├── payment/
 │   │   ├── delivery/
 │   │   └── notification/
-│   ├── manifests/                       # Kubernetes manifests
+│   ├── manifests/                       
 │   │   ├── namespace.yaml
 │   │   ├── rbac.yaml
 │   │   ├── configmaps.yaml
 │   │   ├── secrets.yaml
 │   │   ├── ingress.yaml
 │   │   ├── databases/
-│   │   │   ├── postgres.yaml            # PostgreSQL StatefulSet (20Gi)
-│   │   │   └── mongodb.yaml             # MongoDB StatefulSet (20Gi)
+│   │   │   ├── postgres.yaml            
+│   │   │   └── mongodb.yaml             
 │   │   └── infrastructure/
-│   │       ├── rabbitmq.yaml            # RabbitMQ Deployment
-│   │       └── otel-collector.yaml      # OpenTelemetry Collector
-│   └── deploy.sh                        # One-command deployment script
-│
+│   │       ├── rabbitmq.yaml            
+│   │       └── otel-collector.yaml      
+│   └── deploy.sh                        
 ├── .github/
 │   ├── workflows/
-│   │   ├── ci.yml                    # Main CI/CD pipeline (lint, typecheck, test, docker)
-│   │   ├── security.yml              # Security scanning (deps, secrets, code quality)
-│   │   └── docker-build.yml          # Docker build & push to GHCR
-│   └── dependabot.yml                # Automated dependency updates
+│   │   ├── ci.yml                    
+│   │   ├── security.yml              
+│   │   └── docker-build.yml         
+│   └── dependabot.yml                
 │
 ├── infra/
 │   ├── docker-compose.yml
@@ -329,17 +327,27 @@ food-ordering-system/
 │           ├── app.ts
 │           ├── lib/
 │           │   ├── logger.ts
-│           │   └── proxy.ts
+│           │   ├── proxy.ts
+│           │   ├── cache.ts                         
+│           │   ├── versioning.ts                 
+│           │   ├── webhooks.ts                     
+│           │   ├── planBasedRateLimit.ts             
+│           │   └── webhooks-handler.ts             
 │           ├── middlewares/
 │           │   ├── auth.middleware.ts
 │           │   ├── authorize.middleware.ts
 │           │   ├── error.middleware.ts
 │           │   ├── trace.middleware.ts
-│           │   └── rateLimit.middleware.ts
+│           │   ├── rateLimit.middleware.ts
+│           │   ├── cache.middleware.ts               
+│           │   ├── versioning.middleware.ts          
+│           │   └── planBasedRateLimit.middleware.ts  
 │           ├── routes/
 │           │   ├── auth.routes.ts
 │           │   ├── order.routes.ts
 │           │   └── restaurant.routes.ts
+│           ├── types/
+│           │   └── index.ts                         
 │           ├── swagger.ts
 │           └── server.ts
 ├── src/
@@ -943,6 +951,66 @@ moduleNameMapper: {
   - NetworkPolicies for security
   - ServiceAccounts and RBAC for access control
 
+### Phase 13: API Gateway Enhancements ✅
+- [x] **Request/Response Caching (Redis)**:
+  - Redis-backed in-memory caching with configurable TTL (default 5 minutes)
+  - Automatic cache invalidation on PUT/PATCH/DELETE mutations
+  - Pattern-based cache clearing (e.g., clear all restaurant:* on update)
+  - Cache hit/miss tracking via `X-Cache` response headers
+  - Graceful fallback on Redis unavailability
+  - Cache statistics and health monitoring endpoints
+- [x] **API Versioning Strategy**:
+  - Support for v1 (original) and v2 (enhanced) API versions
+  - Version detection via headers (`api-version: v2`) or query parameters (`?api-version=v2`)
+  - Version-specific request schemas with stricter validation for v2
+  - HATEOAS links in v2 responses with `_links` metadata
+  - Version deprecation warnings via `Deprecation` and `Sunset` headers
+  - Backward compatible - defaults to v1 for existing clients
+- [x] **Request Validation Schemas (Zod)**:
+  - Per-version validation using JSON schemas
+  - Email format, password strength (min 8 chars), UUID validation
+  - Nested object and array validation
+  - Version-specific optional fields (e.g., phone, preferences in v2)
+  - Detailed error messages for validation failures
+  - Custom schema extension points for new endpoints
+- [x] **Webhook Support**:
+  - Register/unregister webhooks for domain events
+  - 7 webhook event types: order.{created, updated, cancelled}, payment.{succeeded, failed}, delivery.{assigned, completed}
+  - HMAC-SHA256 signature verification for webhook security
+  - Automatic retry with exponential backoff (3 attempts)
+  - Webhook registry with enable/disable capability
+  - Test webhook endpoint for validation
+  - Webhook delivery logging and failure tracking
+- [x] **Plan-Based Rate Limiting**:
+  - Token bucket algorithm with per-minute, per-hour, and per-day windows
+  - 4 tier plans: FREE (10/min), STARTER (50/min), PROFESSIONAL (200/min), ENTERPRISE (1,000/min)
+  - Burst capacity per plan (5-500 tokens)
+  - Concurrent request limits (2-200 per plan)
+  - Weighted requests for expensive operations (e.g., report generation = 3 requests)
+  - Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+  - Admin endpoints for stats and limit reset
+  - Automatic cleanup of stale buckets every minute
+- [x] **Middleware Integration**:
+  - Cache middleware with custom key generators and conditions
+  - Cache invalidation middleware for mutations
+  - API versioning middleware extracting version from request
+  - Request validation middleware per endpoint
+  - Response transformation middleware for v2 HATEOAS
+  - Plan-based rate limiting middleware with per-user tracking
+  - Endpoint-specific rate limiting with custom weights
+- [x] **Documentation**:
+  - docs/PHASE_13_API_GATEWAY.md (1,485 lines) - Complete feature guide
+  - PHASE_13_README.md - Quick start and integration checklist
+  - Code examples for all features and use cases
+  - Testing procedures and troubleshooting
+  - Security best practices for caching, rate limiting, and webhooks
+- [x] **Production Features**:
+  - Error handling and graceful degradation
+  - Comprehensive logging and monitoring hooks
+  - TypeScript interfaces for all components
+  - Extensible architecture for custom validators and cache strategies
+  - Minimal dependencies (ioredis, zod, axios)
+
 ## Observability Dashboards
 
 - **Prometheus (metrics explorer):**  
@@ -954,6 +1022,59 @@ moduleNameMapper: {
 
 You can use Prometheus to query raw metrics and Grafana to view pre-built dashboards for system health, HTTP traffic, and events.
 If you have custom dashboards or alerts, mention their location or import instructions here.
+
+## API Gateway Enhancements (Phase 13)
+
+The API Gateway now includes enterprise-grade features for caching, versioning, validation, webhooks, and plan-based rate limiting.
+
+### Quick Start
+
+```bash
+# Install dependencies
+cd services/api-gateway
+npm install ioredis zod axios
+
+# Start Redis
+docker run -d -p 6379:6379 redis:latest
+
+# Apply middleware (in app.ts)
+import { apiVersionMiddleware } from './middlewares/versioning.middleware';
+import { planBasedRateLimitMiddleware } from './middlewares/planBasedRateLimit.middleware';
+
+app.use(apiVersionMiddleware());
+app.use(planBasedRateLimitMiddleware());
+```
+
+### Key Features
+
+- **Redis Caching**: Request/response caching with pattern invalidation
+- **API Versioning**: v1/v2 support with version-specific schemas
+- **Request Validation**: Per-version schema validation using Zod
+- **Webhooks**: Event delivery with HMAC signing and automatic retries
+- **Plan-Based Rate Limiting**: 4 tiers (FREE/STARTER/PROFESSIONAL/ENTERPRISE)
+
+### Rate Limit Plans
+
+| Plan | Per Minute | Per Hour | Per Day | Concurrent |
+|------|-----------|----------|---------|-----------|
+| FREE | 10 | 100 | 500 | 2 |
+| STARTER | 50 | 1,000 | 10,000 | 10 |
+| PROFESSIONAL | 200 | 5,000 | 50,000 | 50 |
+| ENTERPRISE | 1,000 | 50,000 | 500,000 | 200 |
+
+### Documentation
+
+See [docs/PHASE_13_API_GATEWAY.md](docs/PHASE_13_API_GATEWAY.md) for:
+- Complete feature documentation with code examples
+- Redis caching strategy and invalidation patterns
+- API versioning and HATEOAS response format
+- Webhook registration and security
+- Plan-based rate limiting configuration
+- Testing procedures and troubleshooting
+
+Quick start: [PHASE_13_README.md](PHASE_13_README.md)
+
+---
 
 ## Kubernetes Deployment
 
